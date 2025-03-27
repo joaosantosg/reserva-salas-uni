@@ -37,6 +37,9 @@ black = "^25.1.0"
 isort = "^6.0.1"
 flake8 = "^7.1.2"
 mypy = "^1.15.0"
+testcontainers-postgres = "^0.0.1rc1"
+testcontainers = "^4.9.2"
+docker = "^7.1.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

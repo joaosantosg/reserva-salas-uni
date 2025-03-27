@@ -1,17 +1,18 @@
 import json
 import os
-
 import pytest
 from datetime import datetime, date, time, timedelta
 from uuid import UUID, uuid4
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from testcontainers.postgres import PostgresContainer
 
+# Set test environment before any imports
 os.environ["ENV"] = "test"
 
-if os.getenv("ENV") not in ["test"]:
-    msg = f"ENV is not test, it is {os.getenv('ENV')}"
-    pytest.exit(msg)
+# Required for email tests
+os.environ["MAILGUN_API_KEY"] = "test_key"
+os.environ["MAILGUN_DOMAIN"] = "test.com"
 
 from fastapi.testclient import TestClient
 from loguru import logger
@@ -31,16 +32,41 @@ from app.repository.reserva_recorrente_repository import ReservaRecorrenteReposi
 from app.repository.sala_repository import SalaRepository
 from app.repository.usuario_repository import UsuarioRepository
 from app.core.security.jwt import JWTManager
-from app.main import create_app
 
-# Test database URL
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# Global container instance
+_postgres_container = None
+
+def get_container():
+    global _postgres_container
+    if _postgres_container is None:
+        _postgres_container = PostgresContainer(
+            image="postgres:15-alpine",
+            username="test",
+            password="test",
+            dbname="test_db",
+            port=5432,
+        )
+        _postgres_container.start()
+        
+        # Update environment variables
+        os.environ["DB"] = "postgresql"
+        os.environ["DB_USER"] = "test"
+        os.environ["DB_PASSWORD"] = "test"
+        os.environ["DB_HOST"] = _postgres_container.get_container_host_ip()
+        os.environ["DB_PORT"] = str(_postgres_container.get_exposed_port(5432))
+        os.environ["DB_NAME"] = "test_db"
+    
+    return _postgres_container
 
 @pytest.fixture(scope="session")
-def engine():
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-    )
+def postgres_container():
+    container = get_container()
+    yield container
+    container.stop()
+
+@pytest.fixture(scope="session")
+def engine(postgres_container):
+    engine = create_engine(settings.DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -57,20 +83,28 @@ def db_session(engine):
 
 @pytest.fixture
 def usuario(db_session) -> Usuario:
+    # First, try to delete any existing user with the same email
+    existing_user = db_session.query(Usuario).filter_by(email="teste@teste.com").first()
+    if existing_user:
+        db_session.delete(existing_user)
+        db_session.commit()
+    
     usuario = Usuario(
         id=uuid4(),
         nome="Teste",
         email="teste@teste.com",
         matricula="123456",
+        curso="Engenharia de Software",
         senha="senha123",
         ativo=True
     )
     db_session.add(usuario)
     db_session.commit()
+    db_session.refresh(usuario)
 
-    # Gerar token JWT
+    # Generate JWT token
     jwt_manager = JWTManager()
-    token = jwt_manager.create_access_token(usuario.id)
+    token = jwt_manager.create_access_token(usuario)
     usuario.token = token
     
     return usuario
@@ -153,32 +187,24 @@ def sala_repository(db_session):
 def usuario_repository(db_session):
     return UsuarioRepository(db_session)
 
-
 def reset_db():
-    engine = create_engine(settings.DATABASE_URI)
-    logger.info(engine)
+    engine = create_engine(settings.DATABASE_URL)
     with engine.begin() as conn:
-        if "test" in settings.DATABASE_URI:
-            from app.model.base_model import Base
-            Base.metadata.drop_all(conn)
-            Base.metadata.create_all(conn)
-        else:
-            raise Exception("Not in test environment")
+        Base.metadata.drop_all(conn)
+        Base.metadata.create_all(conn)
     return engine
-
 
 @pytest.fixture
 def client():
     reset_db()
+    from app.main import create_app
     app = create_app()
     with TestClient(app) as client:
         yield client
 
-
 @pytest.fixture
 def container():
     return Container()
-
 
 @pytest.fixture
 def test_name(request):

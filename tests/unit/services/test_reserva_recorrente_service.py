@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta
 from uuid import uuid4
 from app.services.reserva_recorrente_service import ReservaRecorrenteService
-from app.schema.reserva_recorrente_schema import ReservaRecorrenteCreate, ReservaRecorrenteUpdate
+from app.schema.reserva_schema import ReservaRecorrenteCreate, ReservaRecorrenteUpdate
 from app.core.commons.exceptions import NotFoundException, BusinessException
 
 class TestReservaRecorrenteService:

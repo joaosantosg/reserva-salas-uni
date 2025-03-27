@@ -12,7 +12,6 @@ from app.core.config.settings import settings
 from app.core.config.logging import setup_logging
 from app.core.database.database import init_db
 from app.core.commons.exceptions import BaseAPIException, api_exception_handler
-from app.scripts.processar_reservas_recorrentes import processar_reservas
 
 def create_app() -> FastAPI:
     # Create container

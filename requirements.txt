@@ -1,0 +1,24 @@
+fastapi
+uvicorn
+sqlalchemy
+sqlmodel
+pydantic
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+loguru
+apscheduler
+requests
+python-dotenv
+dependency-injector
+holidays
+
+# Dev dependencies
+pytest
+pytest-cov
+httpx
+black
+isort
+flake8
+mypy

@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
-from typing import Optional
+
 
 class DateTimeUtils:
     @classmethod
@@ -12,10 +11,10 @@ class DateTimeUtils:
     def is_past(cls, dt: datetime) -> bool:
         """
         Verifica se uma data é anterior ao momento atual
-        
+
         Args:
             dt: Data a ser verificada
-            
+
         Returns:
             bool: True se a data é anterior ao momento atual, False caso contrário
         """
@@ -25,7 +24,6 @@ class DateTimeUtils:
         if dt.tzinfo:
             dt = dt.replace(tzinfo=None)
         return dt < cls.now()
-
 
     @classmethod
     def format_datetime(cls, dt: datetime, format: str = "%Y-%m-%d %H:%M:%S") -> str:
@@ -41,4 +39,4 @@ class DateTimeUtils:
     @classmethod
     def get_default_datetime(cls) -> datetime:
         """Retorna datetime padrão para uso em colunas SQLAlchemy"""
-        return cls.now() 
+        return cls.now()

@@ -14,10 +14,11 @@ router = APIRouter(
 
 @router.post("/login", response_model=LoginResposta)
 @inject
-def login(user_info: LoginRequisicao, service: AuthService = Depends(Provide[Container.auth_service])):
+def login(
+    user_info: LoginRequisicao,
+    service: AuthService = Depends(Provide[Container.auth_service]),
+):
     return service.login(user_info)
-
-
 
 
 # @router.get("/me", response_model=User)
@@ -29,7 +30,3 @@ def login(user_info: LoginRequisicao, service: AuthService = Depends(Provide[Con
 # TODO: Implementar rotas de recuperação de senha e redefinição de senha
 
 # TODO: Implementar rotas de refresh token
-
-
-
-

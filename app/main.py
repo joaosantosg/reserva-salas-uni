@@ -14,13 +14,14 @@ from app.core.config.logging import setup_logging
 from app.core.database.database import init_db
 from app.core.commons.exceptions import BaseAPIException, api_exception_handler
 
+
 def create_app() -> FastAPI:
     # Create container
     container = Container()
-    
+
     # Wire the container to your modules
     container.wire(packages=["app.api.v1"])
-    
+
     app = FastAPI(
         title="Reserva Salas UNI",
         version="0.1.0",
@@ -35,7 +36,7 @@ def create_app() -> FastAPI:
         },
         swagger_ui_init_oauth={
             "usePkceWithAuthorizationCodeGrant": True,
-        }
+        },
     )
 
     # Configure CORS
@@ -60,14 +61,14 @@ def create_app() -> FastAPI:
     def custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-            
+
         openapi_schema = get_openapi(
             title="Reserva Salas UNI",
             version="0.1.0",
             description="API para sistema de reserva de salas",
             routes=app.routes,
         )
-        
+
         # Adiciona o componente de segurança
         openapi_schema["components"]["securitySchemes"] = {
             "JWT": {
@@ -77,10 +78,10 @@ def create_app() -> FastAPI:
                 "description": "Enter JWT Bearer token",
             }
         }
-        
+
         # Aplica segurança globalmente
         openapi_schema["security"] = [{"JWT": []}]
-        
+
         app.openapi_schema = openapi_schema
         return app.openapi_schema
 
@@ -98,5 +99,6 @@ def create_app() -> FastAPI:
     app.include_router(bloco_router, prefix=settings.API_V1_STR)
     app.include_router(sala_router, prefix=settings.API_V1_STR)
     return app
+
 
 app = create_app()

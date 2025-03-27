@@ -10,6 +10,7 @@ from app.schema.bloco_schema import BlocoResponse
 
 class SalaBase(BaseModel):
     """Schema base para sala"""
+
     bloco_id: UUID
     identificacao_sala: str
     capacidade_maxima: int
@@ -23,11 +24,13 @@ class SalaBase(BaseModel):
 
 class SalaCreate(SalaBase):
     """Schema para criação de sala"""
+
     pass
 
 
 class SalaUpdate(BaseModel):
     """Schema para atualização de sala"""
+
     identificacao_sala: Optional[str] = None
     capacidade_maxima: Optional[int] = None
     recursos: Optional[List[str]] = None
@@ -37,6 +40,7 @@ class SalaUpdate(BaseModel):
 
 class SalaResponse(SalaBase):
     """Schema para resposta de sala"""
+
     id: UUID
     criado_em: datetime
     atualizado_em: datetime
@@ -44,11 +48,13 @@ class SalaResponse(SalaBase):
 
 class SalaResponseDetalhada(SalaResponse):
     """Schema para resposta detalhada de sala, incluindo o bloco"""
+
     bloco: BlocoResponse
 
 
 class SalaFiltros(ParametrosPaginacao):
     """Schema para filtros de busca de salas"""
+
     bloco_id: Optional[UUID] = None
     identificacao_sala: Optional[str] = None
     capacidade_minima: Optional[int] = None
@@ -58,8 +64,9 @@ class SalaFiltros(ParametrosPaginacao):
 
 class SalasPaginadas(BaseModel):
     """Schema para resposta paginada de salas"""
+
     items: List[SalaResponse]
     paginacao: InformacoesPaginacao
 
     class Config:
-        from_attributes = True 
+        from_attributes = True

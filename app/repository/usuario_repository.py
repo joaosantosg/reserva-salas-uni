@@ -1,11 +1,11 @@
-from contextlib import AbstractContextManager
-from typing import Callable, Optional
+from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.model.usuario_model import Usuario
 from app.repository.base_repository import BaseRepository
-from app.schema.usuario_schema import UsuarioFiltros, UsuariosPaginados, UsuarioCreate, UsuarioUpdate
+from app.schema.usuario_schema import UsuarioFiltros, UsuariosPaginados
 from app.core.commons.responses import InformacoesPaginacao
+
 
 class UsuarioRepository(BaseRepository):
     def __init__(self, session: Session):
@@ -39,15 +39,16 @@ class UsuarioRepository(BaseRepository):
                 tamanho=filtros.tamanho,
                 total_paginas=total_pages,
                 proxima=filtros.pagina < total_pages,
-                anterior=filtros.pagina > 1
-            )
+                anterior=filtros.pagina > 1,
+            ),
         )
 
     def get_by_email(self, email: str) -> Optional[Usuario]:
         """Busca usuário por email"""
         return self.session.query(Usuario).filter(Usuario.email == email).first()
-    
+
     def get_by_matricula(self, matricula: str) -> Optional[Usuario]:
         """Busca usuário por matrícula"""
-        return self.session.query(Usuario).filter(Usuario.matricula == matricula).first()
-    
+        return (
+            self.session.query(Usuario).filter(Usuario.matricula == matricula).first()
+        )

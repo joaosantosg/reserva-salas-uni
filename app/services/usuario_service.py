@@ -3,7 +3,13 @@ from app.repository.usuario_repository import UsuarioRepository
 from app.services.base_service import BaseService
 from app.core.commons.exceptions import NotFoundException, BusinessException
 from app.model.usuario_model import Usuario
-from app.schema.usuario_schema import UsuarioCreate, UsuarioUpdate, UsuarioFiltros, UsuariosPaginados
+from app.schema.usuario_schema import (
+    UsuarioCreate,
+    UsuarioUpdate,
+    UsuarioFiltros,
+    UsuariosPaginados,
+)
+
 
 class UsuarioService(BaseService):
     def __init__(self, usuario_repository: UsuarioRepository):
@@ -22,7 +28,7 @@ class UsuarioService(BaseService):
             raise BusinessException("Email já cadastrado")
         if self.usuario_repository.get_by_matricula(usuario_data.matricula):
             raise BusinessException("Matrícula já cadastrada")
-        
+
         user_model = Usuario(**usuario_data.model_dump())
         user_model.set_senha(usuario_data.senha)
         return self.usuario_repository.save(user_model)
@@ -45,7 +51,7 @@ class UsuarioService(BaseService):
 
     def delete(self, usuario_id: UUID) -> Usuario:
         usuario = self.get_by_id(usuario_id)
-        if (usuario is None):
+        if usuario is None:
             raise NotFoundException(f"Usuário com ID {usuario_id} não encontrado")
         self.usuario_repository.delete(usuario_id)
         return usuario

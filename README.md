@@ -4,7 +4,8 @@ Sistema de reserva de salas para universidades, desenvolvido com FastAPI e arqui
 
 ## 🚀 Sobre o Projeto
 
-O **Reserva de Salas UNI** é uma aplicação web para gerenciamento de reservas de salas em ambientes universitários. O sistema permite que usuários, como professores e alunos, possam reservar salas para aulas, reuniões e outros eventos de forma simples e eficaz.
+O **Reserva de Salas UNI** é uma aplicação web para gerenciamento de reservas de salas em ambientes universitários.
+O sistema permite que usuários, como professores e coordenadores, possam reservar salas para aulas, reuniões e outros eventos de forma simples e eficaz.
 
 ### Principais Funcionalidades
 

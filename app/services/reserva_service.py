@@ -1,35 +1,33 @@
 from uuid import UUID
-from datetime import datetime, date, time, timezone, timedelta
-from typing import List, Optional
+from datetime import datetime
+from typing import List
 
 from app.repository.reserva_repository import ReservaRepository
 from app.repository.sala_repository import SalaRepository
 from app.repository.usuario_repository import UsuarioRepository
-from app.services.base_service import BaseService
-from app.core.commons.exceptions import NotFoundException, BusinessException, ConflictException
+from app.core.commons.exceptions import NotFoundException, BusinessException
 from app.util.datetime_utils import DateTimeUtils
 from app.model.reserva_model import Reserva
 from app.model.reserva_recorrente_model import ReservaRecorrente
-from app.model.sala_model import Sala
-from app.model.usuario_model import Usuario
 from app.schema.reserva_schema import (
     ReservaCreate,
     ReservaUpdate,
     ReservaFiltros,
-    ReservasPaginadas
+    ReservasPaginadas,
 )
 
 from app.services.email_service import EmailService
 
+
 class ReservaService:
     """Serviço responsável pela gestão de reservas regulares"""
-    
+
     def __init__(
         self,
         reserva_repository: ReservaRepository,
         sala_repository: SalaRepository,
         usuario_repository: UsuarioRepository,
-        email_service: EmailService
+        email_service: EmailService,
     ):
         self.reserva_repository = reserva_repository
         self.sala_repository = sala_repository
@@ -48,59 +46,65 @@ class ReservaService:
         # Busca a sala
         sala = self.sala_repository.get_by_id(reserva_data.sala_id)
         if not sala:
-            raise NotFoundException(f"Sala com ID {reserva_data.sala_id} não encontrada")
-            
+            raise NotFoundException(
+                f"Sala com ID {reserva_data.sala_id} não encontrada"
+            )
+
         # Busca o usuário
         usuario = self.usuario_repository.get_by_id(usuario_id)
         if not usuario:
             raise NotFoundException(f"Usuário com ID {usuario_id} não encontrado")
-            
+
         # Valida datas e horários
         self._validar_datas(reserva_data.inicio, reserva_data.fim)
         self._verificar_conflitos(reserva_data)
-        
+
         # Cria a reserva
         reserva = Reserva(**reserva_data.model_dump())
         reserva.usuario_id = usuario_id
         reserva = self.reserva_repository.save(reserva)
-        
+
         # Envia notificações
         self.email_service.notificar_reserva_criada(reserva, usuario)
-        
+
         return reserva
 
-    def update(self, reserva_id: UUID, reserva_data: ReservaUpdate, usuario_id: UUID) -> Reserva:
+    def update(
+        self, reserva_id: UUID, reserva_data: ReservaUpdate, usuario_id: UUID
+    ) -> Reserva:
         """Atualiza uma reserva existente"""
         # Busca a reserva
         reserva = self.reserva_repository.get_by_id(reserva_id)
         if not reserva:
             raise NotFoundException(f"Reserva com ID {reserva_id} não encontrada")
-            
+
         # Verifica se o usuário é o dono da reserva
         if reserva.usuario_id != usuario_id:
-            raise BusinessException("Você não tem permissão para atualizar esta reserva")
-            
+            raise BusinessException(
+                "Você não tem permissão para atualizar esta reserva"
+            )
+
         # Valida datas e horários se foram alterados
         if reserva_data.inicio or reserva_data.fim:
             inicio = reserva_data.inicio or reserva.inicio
             fim = reserva_data.fim or reserva.fim
             self._validar_datas(inicio, fim)
-            
+
             # Atualiza os dados
             reserva_data_dict = reserva_data.model_dump(exclude_unset=True)
             for key, value in reserva_data_dict.items():
                 setattr(reserva, key, value)
-                
+
             # Verifica conflitos com a nova data/hora
             self._verificar_conflitos(reserva)
-            
+
         # Atualiza a reserva
         reserva = self.reserva_repository.save(reserva)
-        
+
         # Envia notificações
         usuario = self.usuario_repository.get_by_id(usuario_id)
         self.email_service.notificar_reserva_criada(reserva, usuario)
-        
+
         return reserva
 
     def delete(self, reserva_id: UUID, usuario_id: UUID) -> None:
@@ -109,11 +113,11 @@ class ReservaService:
         reserva = self.reserva_repository.get_by_id(reserva_id)
         if not reserva:
             raise NotFoundException(f"Reserva com ID {reserva_id} não encontrada")
-            
+
         # Verifica se o usuário é o dono da reserva
         if reserva.usuario_id != usuario_id:
             raise BusinessException("Você não tem permissão para remover esta reserva")
-            
+
         # Remove a reserva
         self.reserva_repository.delete(reserva_id)
 
@@ -133,44 +137,53 @@ class ReservaService:
         """Valida as datas de início e fim da reserva"""
         if inicio >= fim:
             raise BusinessException("Data de início deve ser anterior à data de fim")
-        
+
         if DateTimeUtils.is_past(inicio):
-            raise BusinessException("Não é possível criar/atualizar reservas para datas passadas")
+            raise BusinessException(
+                "Não é possível criar/atualizar reservas para datas passadas"
+            )
 
     def _verificar_conflitos(self, reserva_data: ReservaCreate) -> None:
         """Verifica se há conflitos de horário para a sala"""
         # Busca reservas existentes para a sala no mesmo dia
         reservas_existentes = self.reserva_repository.get_by_sala_and_date(
-            reserva_data.sala_id,
-            reserva_data.inicio.date()
+            reserva_data.sala_id, reserva_data.inicio.date()
         )
-        
+
         # Verifica conflitos
         for reserva in reservas_existentes:
-            if (reserva_data.inicio < reserva.fim and reserva_data.fim > reserva.inicio):
+            if reserva_data.inicio < reserva.fim and reserva_data.fim > reserva.inicio:
                 raise BusinessException(
                     f"Já existe uma reserva para este horário: "
                     f"{reserva.inicio.strftime('%H:%M')} - {reserva.fim.strftime('%H:%M')}"
                 )
 
-    def _check_recorrente_conflict(self, inicio: datetime, fim: datetime, reserva_recorrente: ReservaRecorrente) -> bool:
+    def _check_recorrente_conflict(
+        self, inicio: datetime, fim: datetime, reserva_recorrente: ReservaRecorrente
+    ) -> bool:
         """Verifica se existe conflito com uma reserva recorrente"""
-        if inicio.date() > reserva_recorrente.data_fim or fim.date() < reserva_recorrente.data_inicio:
+        if (
+            inicio.date() > reserva_recorrente.data_fim
+            or fim.date() < reserva_recorrente.data_inicio
+        ):
             return False
 
         if inicio.date() < reserva_recorrente.data_inicio:
-            inicio_recorrente = datetime.combine(reserva_recorrente.data_inicio, reserva_recorrente.hora_inicio)
+            inicio_recorrente = datetime.combine(
+                reserva_recorrente.data_inicio, reserva_recorrente.hora_inicio
+            )
         else:
             inicio_recorrente = inicio
 
         if fim.date() > reserva_recorrente.data_fim:
-            fim_recorrente = datetime.combine(reserva_recorrente.data_fim, reserva_recorrente.hora_fim)
+            fim_recorrente = datetime.combine(
+                reserva_recorrente.data_fim, reserva_recorrente.hora_fim
+            )
         else:
             fim_recorrente = fim
 
         return (
-            inicio_recorrente.weekday() in reserva_recorrente.dia_da_semana and
-            inicio_recorrente.time() < reserva_recorrente.hora_fim and
-            fim_recorrente.time() > reserva_recorrente.hora_inicio
+            inicio_recorrente.weekday() in reserva_recorrente.dia_da_semana
+            and inicio_recorrente.time() < reserva_recorrente.hora_fim
+            and fim_recorrente.time() > reserva_recorrente.hora_inicio
         )
-        

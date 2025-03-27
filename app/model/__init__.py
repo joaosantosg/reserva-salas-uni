@@ -4,7 +4,7 @@ from app.model.sala_model import Sala
 from app.model.usuario_model import Usuario
 from app.model.reserva_model import Reserva
 from app.model.reserva_recorrente_model import ReservaRecorrente, FrequenciaEnum
-from app.model.auditoria_model import AuditoriaReserva, registrar_event_listeners_reserva
+from app.model.auditoria_model import AuditoriaReserva
 
 __all__ = [
     "Base",
@@ -16,5 +16,5 @@ __all__ = [
     "ReservaRecorrente",
     "FrequenciaEnum",
     "AuditoriaReserva",
-    "registrar_event_listeners"
-] 
+    "registrar_event_listeners",
+]

@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 import re
 
 from app.schema.usuario_schema import UsuarioResponse
@@ -10,13 +10,16 @@ from app.schema.usuario_schema import UsuarioResponse
 # Mixins de validação
 # ------------------------
 
+
 class SenhaValidacaoMixin(BaseModel):
     """Validação para senha segura"""
 
-    @field_validator('senha', mode='before', check_fields=False)
+    @field_validator("senha", mode="before", check_fields=False)
     @classmethod
     def validar_senha(cls, v):
-        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', v):
+        if not re.match(
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", v
+        ):
             # raise ValueError(
             #     'A senha deve conter pelo menos 8 caracteres, '
             #     'incluindo maiúsculas, minúsculas, números e caracteres especiais.'
@@ -28,14 +31,14 @@ class SenhaValidacaoMixin(BaseModel):
 class ConfirmacaoSenhaMixin(BaseModel):
     """Validação de confirmação de senha"""
 
-    @field_validator('confirmar_senha', mode='before', check_fields=False)
+    @field_validator("confirmar_senha", mode="before", check_fields=False)
     @classmethod
     def validar_confirmacao(cls, v, info):
         data = info.data
-        if 'senha' in data and v != data['senha']:
-            raise ValueError('As senhas não conferem.')
-        if 'nova_senha' in data and v != data['nova_senha']:
-            raise ValueError('As senhas não conferem.')
+        if "senha" in data and v != data["senha"]:
+            raise ValueError("As senhas não conferem.")
+        if "nova_senha" in data and v != data["nova_senha"]:
+            raise ValueError("As senhas não conferem.")
         return v
 
 
@@ -43,14 +46,17 @@ class ConfirmacaoSenhaMixin(BaseModel):
 # Requisições e Respostas
 # ------------------------
 
+
 class LoginRequisicao(SenhaValidacaoMixin):
     """Dados necessários para login"""
+
     matricula: str = Field(..., description="Matrícula do usuário")
     senha: str = Field(..., description="Senha do usuário")
 
 
 class LoginResposta(BaseModel):
     """Resposta do login com tokens"""
+
     access_token: str
     refresh_token: str
     expires_in: datetime
@@ -62,11 +68,13 @@ class LoginResposta(BaseModel):
 
 class AtualizarTokenRequisicao(BaseModel):
     """Dados necessários para atualizar token"""
+
     refresh_token: str = Field(..., description="Token de atualização")
 
 
 class AtualizarTokenResposta(BaseModel):
     """Resposta da atualização do token"""
+
     access_token: str
     refresh_token: str
     expires_in: datetime
@@ -78,6 +86,7 @@ class AtualizarTokenResposta(BaseModel):
 
 class TokenPayload(BaseModel):
     """Payload do token JWT"""
+
     id: UUID
     matricula: str
     nome: str
@@ -91,32 +100,39 @@ class TokenPayload(BaseModel):
 # Senhas
 # ------------------------
 
+
 class SenhaBase(SenhaValidacaoMixin, ConfirmacaoSenhaMixin):
     """Base para redefinição ou alteração de senha"""
+
     nova_senha: str = Field(..., description="Nova senha")
     confirmar_senha: str = Field(..., description="Confirmação da nova senha")
 
-    @field_validator('nova_senha', mode='before')
+    @field_validator("nova_senha", mode="before")
     @classmethod
     def validar_nova_senha(cls, v):
-        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', v):
+        if not re.match(
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", v
+        ):
             raise ValueError(
-                'A nova senha deve conter pelo menos 8 caracteres, '
-                'incluindo maiúsculas, minúsculas, números e caracteres especiais.'
+                "A nova senha deve conter pelo menos 8 caracteres, "
+                "incluindo maiúsculas, minúsculas, números e caracteres especiais."
             )
         return v
 
 
 class RecuperarSenhaRequisicao(BaseModel):
     """Requisição para recuperar senha"""
+
     matricula: str = Field(..., description="Matrícula do usuário")
 
 
 class RedefinirSenhaRequisicao(SenhaBase):
     """Requisição para redefinição de senha"""
+
     token: str = Field(..., description="Token de redefinição de senha")
 
 
 class AlterarSenhaRequisicao(SenhaBase):
     """Requisição para alteração de senha"""
+
     senha_atual: str = Field(..., description="Senha atual")

@@ -18,7 +18,7 @@ from app.core.commons.responses import (
     RespostaDados,
     RespostaPaginada,
     ParametrosPaginacao,
-    InformacoesPaginacao
+    InformacoesPaginacao,
 )
 from app.core.commons.exceptions import (
     BaseAPIException,
@@ -27,7 +27,7 @@ from app.core.commons.exceptions import (
     ForbiddenException,
     ValidationException,
     ConflictException,
-    BusinessException
+    BusinessException,
 )
 from app.core.commons.pagination import Paginator
 
@@ -55,5 +55,5 @@ __all__ = [
     "ForbiddenException",
     "ValidationException",
     "ConflictException",
-    "BusinessException"
-] 
+    "BusinessException",
+]

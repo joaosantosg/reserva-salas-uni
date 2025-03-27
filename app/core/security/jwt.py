@@ -1,16 +1,18 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
-from jose import jwt, JWTError
+from typing import Any, Dict
+from jose import jwt
 from passlib.context import CryptContext
-from fastapi import Request, HTTPException, status
+from fastapi import Request
 from app.core.config.settings import settings
 from app.core.commons.exceptions import UnauthorizedException
 from app.model.usuario_model import Usuario
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 class JWTManager:
     """Gerenciador de tokens JWT"""
-    
+
     @staticmethod
     def extract_token(request: Request) -> str:
         """
@@ -21,7 +23,7 @@ class JWTManager:
         if not auth_header or not auth_header.startswith("Bearer "):
             raise UnauthorizedException("Token não fornecido ou formato inválido")
         return auth_header.split(" ")[1]
-    
+
     @staticmethod
     def create_access_token(usuario: Usuario) -> str:
         """Cria um token JWT de acesso"""
@@ -34,9 +36,13 @@ class JWTManager:
                 "email": usuario.email,
                 "nome": usuario.nome,
                 "iat": datetime.utcnow(),
-                "type": "access"
+                "type": "access",
             }
-            return jwt.encode(to_encode, settings.SECRET_KEY.get_secret_value(), algorithm=settings.ALGORITHM)
+            return jwt.encode(
+                to_encode,
+                settings.SECRET_KEY.get_secret_value(),
+                algorithm=settings.ALGORITHM,
+            )
         except Exception as e:
             raise UnauthorizedException(f"Erro ao criar token de acesso: {str(e)}")
 
@@ -51,11 +57,14 @@ class JWTManager:
                 "matricula": usuario.matricula,
                 "email": usuario.email,
                 "nome": usuario.nome,
-
                 "iat": datetime.utcnow(),
-                "type": "refresh"
+                "type": "refresh",
             }
-            return jwt.encode(to_encode, settings.SECRET_KEY.get_secret_value(), algorithm=settings.ALGORITHM)
+            return jwt.encode(
+                to_encode,
+                settings.SECRET_KEY.get_secret_value(),
+                algorithm=settings.ALGORITHM,
+            )
         except Exception as e:
             raise UnauthorizedException(f"Erro ao criar token de refresh: {str(e)}")
 
@@ -63,7 +72,11 @@ class JWTManager:
     def verify_token(token: str) -> Dict[str, Any]:
         """Verifica e decodifica um token JWT"""
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY.get_secret_value(), algorithms=[settings.ALGORITHM])
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY.get_secret_value(),
+                algorithms=[settings.ALGORITHM],
+            )
             if payload.get("type") != "access":
                 raise UnauthorizedException("Token inválido")
             return payload
@@ -78,7 +91,11 @@ class JWTManager:
     def verify_refresh_token(token: str) -> str:
         """Verifica um token de refresh"""
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY.get_secret_value(), algorithms=[settings.ALGORITHM])
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY.get_secret_value(),
+                algorithms=[settings.ALGORITHM],
+            )
             if payload.get("type") != "refresh":
                 raise UnauthorizedException("Token de refresh inválido")
             return payload["sub"]
@@ -87,7 +104,9 @@ class JWTManager:
         except jwt.JWTError:
             raise UnauthorizedException("Token de refresh inválido")
         except Exception as e:
-            raise UnauthorizedException(f"Erro na verificação do token de refresh: {str(e)}")
+            raise UnauthorizedException(
+                f"Erro na verificação do token de refresh: {str(e)}"
+            )
 
     @staticmethod
     def create_password_reset_token(subject: Any) -> str:
@@ -98,17 +117,27 @@ class JWTManager:
                 "exp": expire,
                 "sub": str(subject),
                 "iat": datetime.utcnow(),
-                "type": "password_reset"
+                "type": "password_reset",
             }
-            return jwt.encode(to_encode, settings.SECRET_KEY.get_secret_value(), algorithm=settings.ALGORITHM)
+            return jwt.encode(
+                to_encode,
+                settings.SECRET_KEY.get_secret_value(),
+                algorithm=settings.ALGORITHM,
+            )
         except Exception as e:
-            raise UnauthorizedException(f"Erro ao criar token de reset de senha: {str(e)}")
+            raise UnauthorizedException(
+                f"Erro ao criar token de reset de senha: {str(e)}"
+            )
 
     @staticmethod
     def verify_password_reset_token(token: str) -> str:
         """Verifica um token de reset de senha"""
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY.get_secret_value(), algorithms=[settings.ALGORITHM])
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY.get_secret_value(),
+                algorithms=[settings.ALGORITHM],
+            )
             if payload.get("type") != "password_reset":
                 raise UnauthorizedException("Token inválido")
             return payload["sub"]
@@ -117,7 +146,9 @@ class JWTManager:
         except jwt.JWTError:
             raise UnauthorizedException("Token inválido")
         except Exception as e:
-            raise UnauthorizedException(f"Erro ao verificar token de reset de senha: {str(e)}")
+            raise UnauthorizedException(
+                f"Erro ao verificar token de reset de senha: {str(e)}"
+            )
 
     @staticmethod
     def get_token_payload(request: Request) -> Dict[str, Any]:

@@ -3,7 +3,6 @@ from dependency_injector.wiring import inject, Provide
 from uuid import UUID
 
 from app.core.di.container import Container
-from app.core.security.jwt import JWTManager
 from app.core.commons.responses import RespostaDados, RespostaPaginada
 
 from app.schema.reserva_schema import (
@@ -14,7 +13,7 @@ from app.schema.reserva_schema import (
     ReservaRecorrenteFiltros,
     ReservaRecorrenteResponse,
     ReservaRecorrenteCreate,
-    ReservaRecorrenteUpdate
+    ReservaRecorrenteUpdate,
 )
 from app.services.reserva_service import ReservaService
 from app.services.reserva_recorrente_service import ReservaRecorrenteService
@@ -25,8 +24,9 @@ from app.model.usuario_model import Usuario
 router = APIRouter(
     prefix="/reserva",
     tags=["reserva"],
-    dependencies=[Depends(AuthDependencies.get_current_user)]
+    dependencies=[Depends(AuthDependencies.get_current_user)],
 )
+
 
 # Endpoints para Reservas
 @router.get("", response_model=RespostaPaginada[ReservaResponse])
@@ -36,10 +36,8 @@ def listar_reservas(
     service: ReservaService = Depends(Provide[Container.reserva_service]),
 ):
     resultado = service.get_by_query(filtros)
-    return RespostaPaginada(
-        dados=resultado.items,
-        paginacao=resultado.paginacao
-    )
+    return RespostaPaginada(dados=resultado.items, paginacao=resultado.paginacao)
+
 
 @router.get("/{reserva_id}", response_model=RespostaDados[ReservaResponse])
 @inject
@@ -49,6 +47,7 @@ def obter_reserva(
 ):
     reserva = service.get_by_id(reserva_id)
     return RespostaDados(dados=reserva)
+
 
 @router.post("", response_model=RespostaDados[ReservaResponse])
 @inject
@@ -61,29 +60,36 @@ async def criar_reserva(
     dados = service.create(reserva, usuario.id)
     return RespostaDados(dados=dados)
 
+
 @router.patch("/{reserva_id}", response_model=RespostaDados[ReservaResponse])
 @inject
 def atualizar_reserva(
     reserva_id: UUID,
     reserva: ReservaUpdate,
+    usuario: Usuario = Depends(AuthDependencies.get_current_user),
     service: ReservaService = Depends(Provide[Container.reserva_service]),
 ):
-    return RespostaDados(dados=service.update(reserva_id, reserva))
+    return RespostaDados(dados=service.update(reserva_id, reserva, usuario.id))
+
 
 @router.delete("/{reserva_id}", response_model=RespostaDados[ReservaResponse])
 @inject
 def remover_reserva(
     reserva_id: UUID,
+    usuario: Usuario = Depends(AuthDependencies.get_current_user),
     service: ReservaService = Depends(Provide[Container.reserva_service]),
 ):
-    return RespostaDados(dados=service.delete(reserva_id))
+    return RespostaDados(dados=service.delete(reserva_id, usuario.id))
+
 
 # Endpoints para Reservas Recorrentes
 @router.get("/recorrente", response_model=RespostaPaginada[ReservaRecorrenteResponse])
 @inject
 def listar_reservas_recorrentes(
     filtros: ReservaRecorrenteFiltros = Depends(),
-    service: ReservaRecorrenteService = Depends(Provide[Container.reserva_recorrente_service]),
+    service: ReservaRecorrenteService = Depends(
+        Provide[Container.reserva_recorrente_service]
+    ),
 ):
     """
     Lista todas as reservas recorrentes com filtros e paginação.
@@ -97,14 +103,19 @@ def listar_reservas_recorrentes(
     return RespostaPaginada(
         dados=resultado.items,
         paginacao=resultado.paginacao,
-        mensagem="Lista de reservas recorrentes recuperada com sucesso"
+        mensagem="Lista de reservas recorrentes recuperada com sucesso",
     )
 
-@router.get("/recorrente/{reserva_id}", response_model=RespostaDados[ReservaRecorrenteResponse])
+
+@router.get(
+    "/recorrente/{reserva_id}", response_model=RespostaDados[ReservaRecorrenteResponse]
+)
 @inject
 def obter_reserva_recorrente(
     reserva_id: UUID,
-    service: ReservaRecorrenteService = Depends(Provide[Container.reserva_recorrente_service]),
+    service: ReservaRecorrenteService = Depends(
+        Provide[Container.reserva_recorrente_service]
+    ),
 ):
     """
     Obtém os detalhes de uma reserva recorrente específica.
@@ -112,16 +123,18 @@ def obter_reserva_recorrente(
     """
     reserva = service.get_by_id(reserva_id)
     return RespostaDados(
-        dados=reserva,
-        mensagem=f"Reserva recorrente encontrada: {reserva.motivo}"
+        dados=reserva, mensagem=f"Reserva recorrente encontrada: {reserva.motivo}"
     )
+
 
 @router.post("/recorrente", response_model=RespostaDados[ReservaRecorrenteResponse])
 @inject
 async def criar_reserva_recorrente(
     reserva: ReservaRecorrenteCreate,
     usuario: Usuario = Depends(AuthDependencies.get_current_user),
-    service: ReservaRecorrenteService = Depends(Provide[Container.reserva_recorrente_service]),
+    service: ReservaRecorrenteService = Depends(
+        Provide[Container.reserva_recorrente_service]
+    ),
 ):
     """
     Cria uma nova reserva recorrente.
@@ -131,18 +144,23 @@ async def criar_reserva_recorrente(
     - MENSAL: "1ºDIA-SALA101-14H"
     """
     reserva.usuario_id = usuario.id
-    dados = service.create(reserva)
+    dados = service.create(reserva, usuario.id)
     return RespostaDados(
         dados=dados,
-        mensagem=f"Reserva recorrente criada com identificação: {dados.motivo}"
+        mensagem=f"Reserva recorrente criada com identificação: {dados.motivo}",
     )
 
-@router.patch("/recorrente/{reserva_id}", response_model=RespostaDados[ReservaRecorrenteResponse])
+
+@router.patch(
+    "/recorrente/{reserva_id}", response_model=RespostaDados[ReservaRecorrenteResponse]
+)
 @inject
 def atualizar_reserva_recorrente(
     reserva_id: UUID,
     reserva: ReservaRecorrenteUpdate,
-    service: ReservaRecorrenteService = Depends(Provide[Container.reserva_recorrente_service]),
+    service: ReservaRecorrenteService = Depends(
+        Provide[Container.reserva_recorrente_service]
+    ),
 ):
     """
     Atualiza uma reserva recorrente existente.
@@ -150,30 +168,39 @@ def atualizar_reserva_recorrente(
     """
     dados = service.update(reserva_id, reserva)
     return RespostaDados(
-        dados=dados,
-        mensagem=f"Reserva recorrente atualizada: {dados.motivo}"
+        dados=dados, mensagem=f"Reserva recorrente atualizada: {dados.motivo}"
     )
 
-@router.delete("/recorrente/{reserva_id}", response_model=RespostaDados[ReservaRecorrenteResponse])
+
+@router.delete(
+    "/recorrente/{reserva_id}", response_model=RespostaDados[ReservaRecorrenteResponse]
+)
 @inject
 def remover_reserva_recorrente(
     reserva_id: UUID,
-    service: ReservaRecorrenteService = Depends(Provide[Container.reserva_recorrente_service]),
+    service: ReservaRecorrenteService = Depends(
+        Provide[Container.reserva_recorrente_service]
+    ),
 ):
     """
     Remove uma reserva recorrente e todas as suas ocorrências futuras.
     """
     dados = service.delete(reserva_id)
     return RespostaDados(
-        dados=dados,
-        mensagem=f"Reserva recorrente removida: {dados.motivo}"
+        dados=dados, mensagem=f"Reserva recorrente removida: {dados.motivo}"
     )
 
-@router.post("/recorrente/{reserva_id}/recriar", response_model=RespostaDados[ReservaRecorrenteResponse])
+
+@router.post(
+    "/recorrente/{reserva_id}/recriar",
+    response_model=RespostaDados[ReservaRecorrenteResponse],
+)
 @inject
 def recriar_reservas_recorrentes(
     reserva_id: UUID,
-    service: ReservaRecorrenteService = Depends(Provide[Container.reserva_recorrente_service]),
+    service: ReservaRecorrenteService = Depends(
+        Provide[Container.reserva_recorrente_service]
+    ),
 ):
     """
     Recria todas as reservas individuais de uma reserva recorrente.
@@ -181,6 +208,5 @@ def recriar_reservas_recorrentes(
     """
     dados = service.recriar_reservas(reserva_id)
     return RespostaDados(
-        dados=dados,
-        mensagem=f"Reservas recriadas com sucesso para: {dados.motivo}"
-    ) 
+        dados=dados, mensagem=f"Reservas recriadas com sucesso para: {dados.motivo}"
+    )

@@ -1,5 +1,5 @@
 from datetime import datetime, date, time
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from uuid import UUID
 from enum import Enum
 
@@ -9,8 +9,10 @@ from app.core.commons.responses import ParametrosPaginacao, InformacoesPaginacao
 from app.schema.sala_schema import SalaResponse
 from app.schema.usuario_schema import UsuarioResponse
 
+
 class FrequenciaRecorrencia(str, Enum):
     """Enum para frequência de recorrência"""
+
     DIARIA = "DIARIA"
     SEMANAL = "SEMANAL"
     MENSAL = "MENSAL"
@@ -18,8 +20,9 @@ class FrequenciaRecorrencia(str, Enum):
 
 class ReservaBase(BaseModel):
     """Schema base para reserva"""
+
     sala_id: UUID
-    
+
     inicio: datetime
     fim: datetime
     usuario_id: Optional[UUID] = None
@@ -31,11 +34,13 @@ class ReservaBase(BaseModel):
 
 class ReservaCreate(ReservaBase):
     """Schema para criação de reserva"""
+
     pass
 
 
 class ReservaUpdate(BaseModel):
     """Schema para atualização de reserva"""
+
     inicio: Optional[datetime] = None
     fim: Optional[datetime] = None
     motivo: Optional[str] = None
@@ -43,6 +48,7 @@ class ReservaUpdate(BaseModel):
 
 class ReservaResponse(ReservaBase):
     """Schema para resposta de reserva"""
+
     id: UUID
     criado_em: datetime
     atualizado_em: datetime
@@ -52,6 +58,7 @@ class ReservaResponse(ReservaBase):
 
 class ReservaFiltros(ParametrosPaginacao):
     """Schema para filtros de busca de reservas"""
+
     sala_id: Optional[UUID] = None
     usuario_id: Optional[UUID] = None
     data_inicio: Optional[date] = None
@@ -60,6 +67,7 @@ class ReservaFiltros(ParametrosPaginacao):
 
 class ReservasPaginadas(BaseModel):
     """Schema para resposta paginada de reservas"""
+
     items: List[ReservaResponse]
     paginacao: InformacoesPaginacao
 
@@ -69,6 +77,7 @@ class ReservasPaginadas(BaseModel):
 
 class ReservaRecorrenteBase(BaseModel):
     """Schema base para reserva recorrente"""
+
     sala_id: UUID
     usuario_id: Optional[UUID] = None
     motivo: str
@@ -84,18 +93,26 @@ class ReservaRecorrenteBase(BaseModel):
     class Config:
         from_attributes = True
 
-    @validator('dia_da_semana')
+    @validator("dia_da_semana")
     def validate_dia_da_semana(cls, v, values):
-        if 'frequencia' in values and values['frequencia'] == FrequenciaRecorrencia.SEMANAL:
+        if (
+            "frequencia" in values
+            and values["frequencia"] == FrequenciaRecorrencia.SEMANAL
+        ):
             if not v:
                 raise ValueError("Dia da semana é obrigatório para frequência semanal")
             if not all(0 <= dia <= 6 for dia in v):
-                raise ValueError("Dias da semana devem estar entre 0 (segunda) e 6 (domingo)")
+                raise ValueError(
+                    "Dias da semana devem estar entre 0 (segunda) e 6 (domingo)"
+                )
         return v
 
-    @validator('dia_do_mes')
+    @validator("dia_do_mes")
     def validate_dia_do_mes(cls, v, values):
-        if 'frequencia' in values and values['frequencia'] == FrequenciaRecorrencia.MENSAL:
+        if (
+            "frequencia" in values
+            and values["frequencia"] == FrequenciaRecorrencia.MENSAL
+        ):
             if not v:
                 raise ValueError("Dia do mês é obrigatório para frequência mensal")
             if not 1 <= v <= 31:
@@ -105,11 +122,13 @@ class ReservaRecorrenteBase(BaseModel):
 
 class ReservaRecorrenteCreate(ReservaRecorrenteBase):
     """Schema para criação de reserva recorrente"""
+
     pass
 
 
 class ReservaRecorrenteUpdate(BaseModel):
     """Schema para atualização de reserva recorrente"""
+
     motivo: Optional[str] = None
     frequencia: Optional[FrequenciaRecorrencia] = None
     dia_da_semana: Optional[List[int]] = None
@@ -122,6 +141,7 @@ class ReservaRecorrenteUpdate(BaseModel):
 
 class ReservaRecorrenteResponse(ReservaRecorrenteBase):
     """Schema para resposta de reserva recorrente"""
+
     id: UUID
     criado_em: datetime
     atualizado_em: datetime
@@ -132,6 +152,7 @@ class ReservaRecorrenteResponse(ReservaRecorrenteBase):
 
 class ReservaRecorrenteFiltros(ParametrosPaginacao):
     """Schema para filtros de busca de reservas recorrentes"""
+
     sala_id: Optional[UUID] = None
     usuario_id: Optional[UUID] = None
     frequencia: Optional[FrequenciaRecorrencia] = None
@@ -141,6 +162,7 @@ class ReservaRecorrenteFiltros(ParametrosPaginacao):
 
 class ReservasRecorrentesPaginadas(BaseModel):
     """Schema para resposta paginada de reservas recorrentes"""
+
     items: List[ReservaRecorrenteResponse]
     paginacao: InformacoesPaginacao
 
@@ -150,6 +172,7 @@ class ReservasRecorrentesPaginadas(BaseModel):
 
 class EstatisticaSala(BaseModel):
     """Estatísticas de uso de uma sala"""
+
     total_reservas: int
     horas_reservadas: float
     horarios_pico: dict
@@ -159,6 +182,7 @@ class EstatisticaSala(BaseModel):
 
 class RelatorioUsoSalas(BaseModel):
     """Relatório de uso das salas"""
+
     periodo: dict
     total_salas: int
     salas: List[EstatisticaSala]

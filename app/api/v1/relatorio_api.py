@@ -1,16 +1,10 @@
-from datetime import datetime
-from typing import List
-from fastapi import APIRouter, Depends, Query
-from app.services.relatorio_service import RelatorioService
-from app.repository.reserva_repository import ReservaRepository
-from app.schema.reserva_schema import RelatorioUsoSalas
-from app.model.usuario_model import Usuario
+from fastapi import APIRouter, Depends
 from app.core.security.auth_dependencies import AuthDependencies
 
 router = APIRouter(
     prefix="/relatorio",
     tags=["Relatórios"],
-    dependencies=[Depends(AuthDependencies.get_current_active_superuser)]
+    dependencies=[Depends(AuthDependencies.get_current_active_superuser)],
 )
 
 # @router.get("/uso-salas", response_model=RelatorioUsoSalas)
@@ -25,4 +19,4 @@ router = APIRouter(
 #     Requer privilégios de superusuário.
 #     """
 #     relatorio_service = RelatorioService(reserva_repository)
-#     return relatorio_service.gerar_relatorio_uso_salas(data_inicio, data_fim) 
+#     return relatorio_service.gerar_relatorio_uso_salas(data_inicio, data_fim)

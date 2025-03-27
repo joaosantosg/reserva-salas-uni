@@ -1,6 +1,5 @@
 from dependency_injector import containers, providers
 
-from app.core.config import settings
 from app.core.database.database import SessionLocal
 from app.repository.usuario_repository import UsuarioRepository
 from app.repository.reserva_repository import ReservaRepository
@@ -17,9 +16,10 @@ from app.services.email_service import EmailService
 from app.core.security.jwt import JWTManager
 from app.clients.email_client import EmailClient
 
+
 class Container(containers.DeclarativeContainer):
     """Container de injeção de dependência"""
-    
+
     wiring_config = containers.WiringConfiguration(
         modules=[
             "app.api.v1.auth_api",
@@ -28,85 +28,58 @@ class Container(containers.DeclarativeContainer):
             "app.api.v1.bloco_api",
             "app.api.v1.sala_api",
         ],
-        packages=["app.api.v1"]
+        packages=["app.api.v1"],
     )
 
     # Database
     db = providers.Singleton(SessionLocal)
-    
+
     # Clients
     email_client = providers.Singleton(EmailClient)
-    
+
     # Repositories
-    usuario_repository = providers.Factory(
-        UsuarioRepository,
-        session=db
-    )
-    
-    reserva_repository = providers.Factory(
-        ReservaRepository,
-        session=db
-    )
-    
+    usuario_repository = providers.Factory(UsuarioRepository, session=db)
+
+    reserva_repository = providers.Factory(ReservaRepository, session=db)
+
     reserva_recorrente_repository = providers.Factory(
-        ReservaRecorrenteRepository,
-        session=db
+        ReservaRecorrenteRepository, session=db
     )
-    
-    bloco_repository = providers.Factory(
-        BlocoRepository,
-        session=db
-    )
-    
-    sala_repository = providers.Factory(
-        SalaRepository,
-        session=db
-    )
-    
+
+    bloco_repository = providers.Factory(BlocoRepository, session=db)
+
+    sala_repository = providers.Factory(SalaRepository, session=db)
+
     # Services
-    email_service = providers.Factory(
-        EmailService,
-        email_client=email_client
-    )
-    
-    
+    email_service = providers.Factory(EmailService, email_client=email_client)
+
     usuario_service = providers.Factory(
-        UsuarioService,
-        usuario_repository=usuario_repository
+        UsuarioService, usuario_repository=usuario_repository
     )
-    
+
     reserva_service = providers.Factory(
         ReservaService,
         reserva_repository=reserva_repository,
         sala_repository=sala_repository,
         usuario_repository=usuario_repository,
         email_service=email_service,
-
     )
-    
+
     reserva_recorrente_service = providers.Factory(
         ReservaRecorrenteService,
         reserva_repository=reserva_repository,
         sala_repository=sala_repository,
         usuario_repository=usuario_repository,
-        email_service=email_service
+        email_service=email_service,
     )
-    
-    bloco_service = providers.Factory(
-        BlocoService,
-        bloco_repository=bloco_repository
-    )
-    
+
+    bloco_service = providers.Factory(BlocoService, bloco_repository=bloco_repository)
+
     sala_service = providers.Factory(
-        SalaService,
-        sala_repository=sala_repository,
-        bloco_repository=bloco_repository
+        SalaService, sala_repository=sala_repository, bloco_repository=bloco_repository
     )
-    
-    auth_service = providers.Factory(
-        AuthService,
-        user_repository=usuario_repository
-    )
-    
+
+    auth_service = providers.Factory(AuthService, user_repository=usuario_repository)
+
     # Security
     jwt_manager = providers.Singleton(JWTManager)

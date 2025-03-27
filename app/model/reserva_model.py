@@ -5,23 +5,39 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from app.util.datetime_utils import DateTimeUtils
 
+
 class Reserva(BaseModel):
     __tablename__ = "reservas"
     __table_args__ = (
-        CheckConstraint('inicio < fim', name="ck_reserva_periodo_valido"),
+        CheckConstraint("inicio < fim", name="ck_reserva_periodo_valido"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    sala_id = Column(UUID(as_uuid=True), ForeignKey("salas.id", ondelete="CASCADE"), nullable=False)
+    sala_id = Column(
+        UUID(as_uuid=True), ForeignKey("salas.id", ondelete="CASCADE"), nullable=False
+    )
     usuario_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=False)
     inicio = Column(DateTime(timezone=True), nullable=False)
     fim = Column(DateTime(timezone=True), nullable=False)
     motivo = Column(Text)
-    reserva_recorrente_id = Column(UUID(as_uuid=True), ForeignKey("reservas_recorrentes.id", ondelete="CASCADE"), nullable=True)
-    criado_em = Column(DateTime(timezone=True), nullable=False, default=DateTimeUtils.now)
-    atualizado_em = Column(DateTime(timezone=True), nullable=False, default=DateTimeUtils.now, onupdate=DateTimeUtils.now)
+    reserva_recorrente_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("reservas_recorrentes.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    criado_em = Column(
+        DateTime(timezone=True), nullable=False, default=DateTimeUtils.now
+    )
+    atualizado_em = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=DateTimeUtils.now,
+        onupdate=DateTimeUtils.now,
+    )
     excluido_em = Column(DateTime(timezone=True), nullable=True)
-    excluido_por_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True)
+    excluido_por_id = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True
+    )
 
     # Relationships
     sala = relationship("Sala")

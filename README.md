@@ -4,7 +4,7 @@ Sistema de reserva de salas para universidades, desenvolvido com FastAPI e arqui
 
 ## 🚀 Sobre o Projeto
 
-O Reserva de Salas UNI é uma aplicação web para gerenciamento de reservas de salas em ambiente universitário. O sistema permite que usuários (professores, alunos, etc.) reservem salas para aulas, reuniões e outros eventos.
+O **Reserva de Salas UNI** é uma aplicação web para gerenciamento de reservas de salas em ambientes universitários. O sistema permite que usuários, como professores e alunos, possam reservar salas para aulas, reuniões e outros eventos de forma simples e eficaz.
 
 ### Principais Funcionalidades
 
@@ -19,12 +19,12 @@ O Reserva de Salas UNI é uma aplicação web para gerenciamento de reservas de 
 
 O projeto segue os princípios da Arquitetura Limpa (Clean Architecture) e utiliza:
 
-- FastAPI para a API REST
-- SQLAlchemy para ORM
-- PostgreSQL como banco de dados
-- Dependency Injection para injeção de dependências
-- JWT para autenticação
-- Pydantic para validação de dados
+- **FastAPI** para a API REST
+- **SQLAlchemy** para ORM
+- **PostgreSQL** como banco de dados
+- **Dependency Injection** para injeção de dependências
+- **JWT** para autenticação
+- **Pydantic** para validação de dados
 
 ### Estrutura de Models
 
@@ -43,6 +43,7 @@ O sistema possui os seguintes modelos principais:
 - Poetry para gerenciamento de dependências
 - Docker e Docker Compose (opcional)
 - PostgreSQL 15+
+- **Mailgun**: Necessário para envio de notificações por email. Para usar este recurso, será necessário configurar a chave API e o domínio no Mailgun (veja a seção de variáveis de ambiente abaixo).
 
 ## 🚀 Como Executar
 
@@ -64,14 +65,25 @@ cp .env.example .env
 poetry run uvicorn app.main:app --reload
 ```
 
-> **Nota**: Atualmente, as tabelas são criadas automaticamente ao iniciar a aplicação. Futuramente, quando o modelo de dados estiver totalmente definido, serão implementadas migrations com Alembic para um controle mais preciso das alterações do banco de dados.
+### Nota sobre o Banco de Dados
+> **Importante**: Atualmente, as tabelas são criadas automaticamente ao iniciar a aplicação. Futuramente, quando o modelo de dados estiver totalmente definido, serão implementadas migrations com Alembic para um controle mais preciso das alterações do banco de dados.
 
 ### Usuário Inicial
-
 Ao iniciar a aplicação pela primeira vez, um super usuário é criado automaticamente com as seguintes credenciais:
-admin@admin.com
-admin
+```
+Email: admin@admin.com
+Senha: admin
+Matrícula: 1234567890
+```
 
+### Controle de Acesso
+- **Rotas de Usuário** (`/api/v1/usuarios/*`):
+  - Acesso exclusivo para super usuários
+  - Todas as operações CRUD de usuários requerem privilégios de super usuário
+
+- **Demais Rotas** (Blocos, Salas, Reservas):
+  - Acessíveis a qualquer usuário autenticado
+  - Requerem apenas autenticação JWT válida
 
 ### Usando Docker Compose
 
@@ -126,19 +138,27 @@ MAILGUN_API_KEY=sua_chave_api
 MAILGUN_DOMAIN=seu_dominio
 ```
 
+> **Nota**: O envio de notificações por e-mail depende da configuração correta do Mailgun. Certifique-se de adicionar sua chave API e o domínio correto nas variáveis acima.
+
 ## 📚 Documentação da API
 
-Após iniciar o servidor, acesse:
+Após iniciar o servidor, acesse a documentação da API:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
 ## 📄 Docker
 
+Como Construir e Executar a Aplicação com Docker:
+1. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
+```
 
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+2. Inicie os containers:
+```bash
+docker-compose up -d
+```
 
 ## ✅ Requisitos Atendidos
 
@@ -174,28 +194,26 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
   - Uso correto de verbos HTTP
   - Status codes apropriados
   - Documentação OpenAPI/Swagger
-
 - ✅ **Banco de Dados Otimizado**
   - Modelagem eficiente com PostgreSQL
   - Índices otimizados
   - Relacionamentos bem definidos
-
 - ✅ **Autenticação e Segurança**
   - JWT Authentication
   - Refresh tokens
   - Controle de acesso por papel
-
 - ✅ **Testes Automatizados**
   - Testes unitários
   - Testes de integração
   - Cobertura de código
 
-## 🌐 API Publicada
+## 🌐 Endpoints Disponíveis
 
-URL: [Em breve]
+### API
+URL: `reserva-salas.poc.joaosantos.dev.br`
 
-## Interface Web:
-URL: 
+### Interface Web
+URL: `https://redesigned-palm-tree-ten.vercel.app/`
 
 ## 💭 Considerações Finais
 
@@ -205,8 +223,8 @@ Foi um ótimo exercício que trouxe muito aprendizado e me deixou empolgado para
 Atualmente, estou trabalhando em um frontend para dar vida aos dados e tornar essa solução ainda mais incrível. Como estamos falando de uma POC (Prova de Conceito), o projeto está sempre evoluindo – o que você vê aqui provavelmente já passou por várias melhorias e novas funcionalidades desde que este texto foi escrito. Afinal, sempre que tenho um tempinho, estou lá ajustando e incrementando o código.
 É claro, algumas das regras de negócio e validações podem ser bem diferentes do que os usuários realmente precisam. Em um cenário real, essas decisões seriam tomadas junto com os stakeholders antes de colocar as mãos no código. Mas a ideia por trás desse projeto é justamente mostrar como se pode construir algo técnico e bem organizado, sem perder o foco na escalabilidade.
 
-No fim das contas, esse foi um projeto super divertido de desenvolver, que me permitiu explorar várias tecnologias modernas e aplicar boas práticas de desenvolvimento, tudo enquanto me divertia!
+No fim das contas, esse foi um projeto super divertido de desenvolver!
 
 ## 📝 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Nota importante sobre a Licença: Este código é fornecido sob a Licença MIT, mas não pode ser utilizado para fins comerciais sem o meu consentimento prévio. Caso tenha interesse em utilizar o código para qualquer outra finalidade, entre em contato para obter a permissão necessária.

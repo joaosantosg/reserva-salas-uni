@@ -10,7 +10,11 @@ from app.core.di.container import Container
 from dependency_injector.wiring import inject, Provide
 from uuid import UUID
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_STR}/auth/login",
+    scheme_name="JWT",
+    description="JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+)
 
 class AuthDependencies:
     """Dependências de autenticação para rotas FastAPI"""
@@ -56,6 +60,7 @@ class AuthDependencies:
             raise UnauthorizedException(str(e))
     
     @staticmethod
+    @inject
     async def get_current_active_superuser(
         current_user: Usuario = Depends(get_current_user)
     ) -> Usuario:
@@ -68,6 +73,7 @@ class AuthDependencies:
         async def read_admin(current_user: Usuario = Depends(AuthDependencies.get_current_active_superuser)):
             return current_user
         """
-        if not current_user.super_user:
-            raise UnauthorizedException("Acesso negado: privilégios insuficientes")
-        return current_user 
+        user = await current_user
+        if not user.super_user:
+            raise UnauthorizedException(mensagem="Acesso negado: privilégios insuficientes")
+        return user 

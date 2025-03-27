@@ -111,7 +111,34 @@ def init_db() -> None:
             logger.info(f"Tabelas criadas com sucesso: {', '.join(new_tables)}")
         else:
             logger.info("Nenhuma nova tabela precisou ser criada")
-            
+
+        # Verifica se Super User inicial foi criado
+        ## Bscar com email admin@admin.com
+        from app.repository.usuario_repository import UsuarioRepository
+        from app.model.usuario_model import Usuario
+
+        
+        usuario_repository = UsuarioRepository(session=SessionLocal())
+        usuario = usuario_repository.get_by_email("admin@admin.com")
+        if not usuario:
+            logger.info("Super User inicial não encontrado, criando...")
+            usuario = Usuario(
+                nome="Admin",
+                email="admin@admin.com",
+                curso="Engenharia de Software",
+                matricula="1234567890",
+                ativo=True,
+                super_user=True
+            )
+            usuario.set_senha("admin")
+            usuario_repository.save(usuario)
+            logger.info("Super User inicial criado com sucesso")
+            usuario_repository.session.commit()
+            usuario_repository.session.refresh(usuario)
+            logger.info(f"Super User inicial criado: {usuario.id}")
+        else:
+            logger.info(f"Super User inicial encontrado: {usuario.id}")
+        
         logger.info("Inicialização do banco de dados concluída com sucesso")
         
     except Exception as e:

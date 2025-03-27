@@ -1,13 +1,17 @@
 from datetime import datetime
 from typing import List
 from fastapi import APIRouter, Depends, Query
-from app.core.security.auth_dependencies import AuthDependencies
 from app.services.relatorio_service import RelatorioService
 from app.repository.reserva_repository import ReservaRepository
 from app.schema.reserva_schema import RelatorioUsoSalas
 from app.model.usuario_model import Usuario
+from app.core.security.auth_dependencies import AuthDependencies
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/relatorio",
+    tags=["Relatórios"],
+    dependencies=[Depends(AuthDependencies.get_current_active_superuser)]
+)
 
 # @router.get("/uso-salas", response_model=RelatorioUsoSalas)
 # async def gerar_relatorio_uso_salas(

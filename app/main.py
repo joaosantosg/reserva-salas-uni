@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 from app.core.di.container import Container
 
@@ -22,7 +23,19 @@ def create_app() -> FastAPI:
     
     app = FastAPI(
         title="Reserva Salas UNI",
-        version="0.0.1",
+        version="0.1.0",
+        openapi_tags=[
+            {
+                "name": "auth",
+                "description": "Operações de autenticação",
+            },
+        ],
+        swagger_ui_parameters={
+            "persistAuthorization": True,
+        },
+        swagger_ui_init_oauth={
+            "usePkceWithAuthorizationCodeGrant": True,
+        }
     )
 
     # Configure CORS
@@ -38,11 +51,40 @@ def create_app() -> FastAPI:
     setup_logging()
 
     # Initialize database
-    # init_db()
+    init_db()
 
     # Register exception handlers
     app.add_exception_handler(BaseAPIException, api_exception_handler)
 
+    # Adicione a configuração de segurança global
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+            
+        openapi_schema = get_openapi(
+            title="Reserva Salas UNI",
+            version="0.1.0",
+            description="API para sistema de reserva de salas",
+            routes=app.routes,
+        )
+        
+        # Adiciona o componente de segurança
+        openapi_schema["components"]["securitySchemes"] = {
+            "JWT": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Enter JWT Bearer token",
+            }
+        }
+        
+        # Aplica segurança globalmente
+        openapi_schema["security"] = [{"JWT": []}]
+        
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+
+    app.openapi = custom_openapi
 
     # Root endpoint
     @app.get("/")

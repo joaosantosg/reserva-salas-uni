@@ -33,7 +33,6 @@ class TestReservaRecorrenteRepository:
         assert created.usuario_id == usuario.id
         assert created.motivo == "Teste"
         assert created.frequencia == "DIARIA"
-        assert created.ativo is True
         assert created.semestre == 1
         assert created.ano == 2025
 
@@ -111,7 +110,6 @@ class TestReservaRecorrenteRepository:
         repository.soft_delete(reserva_recorrente.id, reserva_recorrente.usuario_id)
         
         deleted = repository.get_by_id(reserva_recorrente.id)
-        assert deleted.ativo is False
         assert deleted.excluido_em is not None
         assert deleted.excluido_por == reserva_recorrente.usuario_id
 

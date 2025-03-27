@@ -15,7 +15,6 @@ from app.services.sala_service import SalaService
 from app.services.auth_service import AuthService
 from app.services.email_service import EmailService
 from app.core.security.jwt import JWTManager
-from app.core.security.auth import AuthManager
 from app.clients.email_client import EmailClient
 
 class Container(containers.DeclarativeContainer):
@@ -111,4 +110,3 @@ class Container(containers.DeclarativeContainer):
     
     # Security
     jwt_manager = providers.Singleton(JWTManager)
-    auth_manager = providers.Singleton(AuthManager) 

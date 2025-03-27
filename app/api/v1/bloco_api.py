@@ -13,11 +13,12 @@ from app.schema.bloco_schema import (
     BlocoUpdate
 )
 from app.services.bloco_service import BlocoService
+from app.core.security.auth_dependencies import AuthDependencies
 
 router = APIRouter(
     prefix="/bloco", 
     tags=["bloco"], 
-    # dependencies=[Depends(JWTManager.verify_token)]
+    dependencies=[Depends(AuthDependencies.get_current_active_superuser)]
 )
 
 @router.get("", response_model=RespostaPaginada[BlocoResponse])

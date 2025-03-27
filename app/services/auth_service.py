@@ -1,9 +1,6 @@
-from datetime import timedelta, datetime
-from typing import List, Optional
-from uuid import UUID
 
+from typing import List
 from app.core.config.settings import settings
-from app.core.security.auth import AuthManager
 from app.core.security.jwt import JWTManager
 from app.core.commons.exceptions import UnauthorizedException, NotFoundException
 from app.model.usuario_model import Usuario
@@ -14,7 +11,6 @@ from app.schema.auth_schema import (
 )
 from app.schema.usuario_schema import UsuarioFiltros
 from app.services.base_service import BaseService
-from app.util.hash import get_rand_hash
 
 
 class AuthService(BaseService):
@@ -29,13 +25,13 @@ class AuthService(BaseService):
         user = self.user_repository.get_by_matricula(credentials.matricula)
 
         if not user:
-            raise UnauthorizedException(detail="Email ou senha incorretos")
+            raise UnauthorizedException(mensagem="Matrícula ou senha incorretos")
             
         if not user.ativo:
-            raise UnauthorizedException(detail="Conta não está ativa")
+            raise UnauthorizedException(mensagem="Conta não está ativa")
             
         if not user.verificar_senha(credentials.senha):
-            raise UnauthorizedException(detail="Email ou senha incorretos")
+            raise UnauthorizedException(mensagem="Matrícula ou senha incorretos")
 
         # Gerar tokens com o ID do usuário como subject
         access_token = JWTManager.create_access_token(user)
@@ -63,7 +59,7 @@ class AuthService(BaseService):
                 expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES
             )
         except Exception:
-            raise UnauthorizedException(detail="Refresh token inválido ou expirado")
+            raise UnauthorizedException(mensagem="Refresh token inválido ou expirado")
 
 
 
@@ -76,7 +72,7 @@ class AuthService(BaseService):
         user: List[Usuario] = self.user_repository.read_by_options(find_user)["founds"]
         
         if not user:
-            raise NotFoundException(detail="Usuário não encontrado")
+            raise NotFoundException(mensagem="Usuário não encontrado")
 
         # Gerar token de recuperação
         reset_token = JWTManager.create_password_reset_token(user[0].id)
@@ -99,11 +95,11 @@ class AuthService(BaseService):
             # Atualizar senha
             user = self.user_repository.get_by_id(user_id)
             if not user:
-                raise NotFoundException(detail="Usuário não encontrado")
+                raise NotFoundException(mensagem="Usuário não encontrado")
                 
             user.set_senha(request.nova_senha)
             self.user_repository.update(user)
             
             return {"message": "Senha alterada com sucesso"}
         except Exception:
-            raise UnauthorizedException(detail="Token de recuperação inválido ou expirado")
+            raise UnauthorizedException(mensagem="Token de recuperação inválido ou expirado")

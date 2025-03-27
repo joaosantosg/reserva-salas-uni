@@ -59,15 +59,19 @@ cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
 
-3. Execute as migrações:
-```bash
-poetry run alembic upgrade head
-```
-
-4. Inicie o servidor:
+3. Inicie o servidor:
 ```bash
 poetry run uvicorn app.main:app --reload
 ```
+
+> **Nota**: Atualmente, as tabelas são criadas automaticamente ao iniciar a aplicação. Futuramente, quando o modelo de dados estiver totalmente definido, serão implementadas migrations com Alembic para um controle mais preciso das alterações do banco de dados.
+
+### Usuário Inicial
+
+Ao iniciar a aplicação pela primeira vez, um super usuário é criado automaticamente com as seguintes credenciais:
+admin@admin.com
+admin
+
 
 ### Usando Docker Compose
 

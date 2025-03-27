@@ -21,10 +21,11 @@ from app.services.reserva_recorrente_service import ReservaRecorrenteService
 from app.core.security.auth_dependencies import AuthDependencies
 from app.model.usuario_model import Usuario
 
+
 router = APIRouter(
     prefix="/reserva",
     tags=["reserva"],
-    # dependencies=[Depends(JWTManager.verify_token)]
+    dependencies=[Depends(AuthDependencies.get_current_user)]
 )
 
 # Endpoints para Reservas

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=dev
+      - DB=postgresql
+      - DB_USER=ftt_owner
+      - DB_PASSWORD=ftt_owner
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=ftt
+      - SECRET_KEY=your-secret-key-here
+      - BACKEND_CORS_ORIGINS=["*"]
+      - MAILGUN_API_KEY=
+      - MAILGUN_DOMAIN=
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=ftt_owner
+      - POSTGRES_PASSWORD=ftt_owner
+      - POSTGRES_DB=ftt
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: 

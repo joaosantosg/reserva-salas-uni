@@ -7,7 +7,6 @@ from app.core.database.database import Base, get_db
 
 # Import security
 from app.core.security.jwt import JWTManager
-from app.core.security.auth import AuthManager
 from app.core.security.auth_dependencies import AuthDependencies
 
 # Import middleware
@@ -41,7 +40,6 @@ __all__ = [
     "Base",
     "get_db",
     "JWTManager",
-    "AuthManager",
     "AuthDependencies",
     "LoggingMiddleware",
     "Container",

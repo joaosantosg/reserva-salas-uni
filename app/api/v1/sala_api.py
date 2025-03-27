@@ -14,12 +14,12 @@ from app.schema.sala_schema import (
     SalaResponseDetalhada
 )
 from app.services.sala_service import SalaService
+from app.core.security.auth_dependencies import AuthDependencies
 
 router = APIRouter(
     prefix="/sala", 
     tags=["Salas"], 
-    
-    # dependencies=[Depends(JWTManager.verify_token)]
+    dependencies=[Depends(AuthDependencies.get_current_user)]
 )
 
 @router.get("", response_model=RespostaPaginada[SalaResponse])

@@ -13,11 +13,12 @@ from app.schema.usuario_schema import (
     UsuarioUpdate
 )
 from app.services.usuario_service import UsuarioService
+from app.core.security.auth_dependencies import AuthDependencies
 
 router = APIRouter(
     prefix="/usuario", 
     tags=["Usuários"], 
-    # dependencies=[Depends(JWTManager.verify_token)]
+    dependencies=[Depends(AuthDependencies.get_current_active_superuser)]
 )
 
 @router.get("", response_model=RespostaPaginada[UsuarioResponse])

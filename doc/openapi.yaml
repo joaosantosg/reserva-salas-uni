@@ -1,0 +1,2216 @@
+openapi: 3.1.0
+info:
+  title: Reserva Salas UNI
+  description: API para sistema de reserva de salas
+  version: 0.1.0
+paths:
+  /:
+    get:
+      summary: Root
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Login
+      operationId: login_api_v1_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequisicao'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResposta'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/usuario:
+    get:
+      tags:
+        - Usuários
+      summary: Listar Usuarios
+      operationId: listar_usuarios_api_v1_usuario_get
+      parameters:
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Pagina
+        - name: tamanho
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 10
+            title: Tamanho
+        - name: ordenar_por
+          in: query
+          required: false
+          schema:
+            type: string
+            default: id
+            title: Ordenar Por
+        - name: ordenacao
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            title: Ordenacao
+        - name: nome
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Nome
+        - name: email
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Email
+        - name: matricula
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Matricula
+        - name: curso
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Curso
+        - name: ativo
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: boolean
+              - type: 'null'
+            title: Ativo
+        - name: super_user
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: boolean
+              - type: 'null'
+            title: Super User
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaPaginada_UsuarioResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+        - Usuários
+      summary: Criar Usuario
+      operationId: criar_usuario_api_v1_usuario_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_UsuarioResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/usuario/{usuario_id}:
+    get:
+      tags:
+        - Usuários
+      summary: Obter Usuario
+      operationId: obter_usuario_api_v1_usuario__usuario_id__get
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Usuario Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_UsuarioResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+        - Usuários
+      summary: Atualizar Usuario
+      operationId: atualizar_usuario_api_v1_usuario__usuario_id__patch
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Usuario Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_UsuarioResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - Usuários
+      summary: Remover Usuario
+      operationId: remover_usuario_api_v1_usuario__usuario_id__delete
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Usuario Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_UsuarioResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reserva:
+    get:
+      tags:
+        - reserva
+      summary: Listar Reservas
+      operationId: listar_reservas_api_v1_reserva_get
+      parameters:
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Pagina
+        - name: tamanho
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 10
+            title: Tamanho
+        - name: ordenar_por
+          in: query
+          required: false
+          schema:
+            type: string
+            default: id
+            title: Ordenar Por
+        - name: ordenacao
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            title: Ordenacao
+        - name: sala_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+            title: Sala Id
+        - name: usuario_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+            title: Usuario Id
+        - name: data_inicio
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: date
+              - type: 'null'
+            title: Data Inicio
+        - name: data_fim
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: date
+              - type: 'null'
+            title: Data Fim
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaPaginada_ReservaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+        - reserva
+      summary: Criar Reserva
+      operationId: criar_reserva_api_v1_reserva_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservaCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reserva/{reserva_id}:
+    get:
+      tags:
+        - reserva
+      summary: Obter Reserva
+      operationId: obter_reserva_api_v1_reserva__reserva_id__get
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+        - reserva
+      summary: Atualizar Reserva
+      operationId: atualizar_reserva_api_v1_reserva__reserva_id__patch
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservaUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - reserva
+      summary: Remover Reserva
+      operationId: remover_reserva_api_v1_reserva__reserva_id__delete
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reserva/recorrente:
+    get:
+      tags:
+        - reserva
+      summary: Listar Reservas Recorrentes
+      description: |-
+        Lista todas as reservas recorrentes com filtros e paginação.
+        Cada reserva recorrente possui uma identificação única que indica:
+        - Frequência (DIARIA/SEMANAL/MENSAL)
+        - Sala
+        - Horário
+        - Dias da semana (quando aplicável)
+      operationId: listar_reservas_recorrentes_api_v1_reserva_recorrente_get
+      parameters:
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Pagina
+        - name: tamanho
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 10
+            title: Tamanho
+        - name: ordenar_por
+          in: query
+          required: false
+          schema:
+            type: string
+            default: id
+            title: Ordenar Por
+        - name: ordenacao
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            title: Ordenacao
+        - name: sala_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+            title: Sala Id
+        - name: usuario_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+            title: Usuario Id
+        - name: frequencia
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - $ref: '#/components/schemas/FrequenciaRecorrencia'
+              - type: 'null'
+            title: Frequencia
+        - name: data_inicio
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: date
+              - type: 'null'
+            title: Data Inicio
+        - name: data_fim
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: date
+              - type: 'null'
+            title: Data Fim
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaPaginada_ReservaRecorrenteResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+        - reserva
+      summary: Criar Reserva Recorrente
+      description: |-
+        Cria uma nova reserva recorrente.
+        A identificação é gerada automaticamente seguindo o padrão:
+        - DIARIA: "DIARIA-SALA101-14H"
+        - SEMANAL: "SEG-SALA101-14H"
+        - MENSAL: "1ºDIA-SALA101-14H"
+      operationId: criar_reserva_recorrente_api_v1_reserva_recorrente_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservaRecorrenteCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaRecorrenteResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reserva/recorrente/{reserva_id}:
+    get:
+      tags:
+        - reserva
+      summary: Obter Reserva Recorrente
+      description: |-
+        Obtém os detalhes de uma reserva recorrente específica.
+        Inclui a identificação única da série de reservas.
+      operationId: obter_reserva_recorrente_api_v1_reserva_recorrente__reserva_id__get
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaRecorrenteResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+        - reserva
+      summary: Atualizar Reserva Recorrente
+      description: |-
+        Atualiza uma reserva recorrente existente.
+        A identificação pode ser atualizada se houver mudanças na frequência ou horário.
+      operationId: atualizar_reserva_recorrente_api_v1_reserva_recorrente__reserva_id__patch
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservaRecorrenteUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaRecorrenteResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - reserva
+      summary: Remover Reserva Recorrente
+      description: Remove uma reserva recorrente e todas as suas ocorrências futuras.
+      operationId: remover_reserva_recorrente_api_v1_reserva_recorrente__reserva_id__delete
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaRecorrenteResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reserva/recorrente/{reserva_id}/recriar:
+    post:
+      tags:
+        - reserva
+      summary: Recriar Reservas Recorrentes
+      description: |-
+        Recria todas as reservas individuais de uma reserva recorrente.
+        Útil para casos onde as reservas foram excluídas acidentalmente ou precisam ser recriadas.
+      operationId: recriar_reservas_recorrentes_api_v1_reserva_recorrente__reserva_id__recriar_post
+      parameters:
+        - name: reserva_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Reserva Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_ReservaRecorrenteResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bloco:
+    get:
+      tags:
+        - bloco
+      summary: Listar Blocos
+      description: Lista blocos com paginação e filtros
+      operationId: listar_blocos_api_v1_bloco_get
+      parameters:
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Pagina
+        - name: tamanho
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 10
+            title: Tamanho
+        - name: ordenar_por
+          in: query
+          required: false
+          schema:
+            type: string
+            default: id
+            title: Ordenar Por
+        - name: ordenacao
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            title: Ordenacao
+        - name: nome
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Nome
+        - name: identificacao
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Identificacao
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaPaginada_BlocoResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+        - bloco
+      summary: Criar Bloco
+      description: Cria um novo bloco
+      operationId: criar_bloco_api_v1_bloco_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlocoCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_BlocoResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bloco/{bloco_id}:
+    get:
+      tags:
+        - bloco
+      summary: Obter Bloco
+      description: Obtém um bloco pelo ID
+      operationId: obter_bloco_api_v1_bloco__bloco_id__get
+      parameters:
+        - name: bloco_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Bloco Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_BlocoResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+        - bloco
+      summary: Atualizar Bloco
+      description: Atualiza um bloco existente
+      operationId: atualizar_bloco_api_v1_bloco__bloco_id__patch
+      parameters:
+        - name: bloco_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Bloco Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlocoUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_BlocoResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - bloco
+      summary: Remover Bloco
+      description: Remove um bloco
+      operationId: remover_bloco_api_v1_bloco__bloco_id__delete
+      parameters:
+        - name: bloco_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Bloco Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_BlocoResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sala:
+    get:
+      tags:
+        - Salas
+      summary: Listar Salas
+      description: Lista salas com paginação e filtros
+      operationId: listar_salas_api_v1_sala_get
+      parameters:
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Pagina
+        - name: tamanho
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 10
+            title: Tamanho
+        - name: ordenar_por
+          in: query
+          required: false
+          schema:
+            type: string
+            default: id
+            title: Ordenar Por
+        - name: ordenacao
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            title: Ordenacao
+        - name: bloco_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                format: uuid
+              - type: 'null'
+            title: Bloco Id
+        - name: identificacao_sala
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Identificacao Sala
+        - name: capacidade_minima
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: 'null'
+            title: Capacidade Minima
+        - name: uso_restrito
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: boolean
+              - type: 'null'
+            title: Uso Restrito
+        - name: curso_restrito
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Curso Restrito
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaPaginada_SalaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+        - Salas
+      summary: Criar Sala
+      description: Cria uma nova sala
+      operationId: criar_sala_api_v1_sala_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_SalaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sala/{sala_id}:
+    get:
+      tags:
+        - Salas
+      summary: Obter Sala
+      description: Obtém uma sala pelo ID
+      operationId: obter_sala_api_v1_sala__sala_id__get
+      parameters:
+        - name: sala_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Sala Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_SalaResponseDetalhada_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+        - Salas
+      summary: Atualizar Sala
+      description: Atualiza uma sala existente
+      operationId: atualizar_sala_api_v1_sala__sala_id__patch
+      parameters:
+        - name: sala_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Sala Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_SalaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - Salas
+      summary: Remover Sala
+      description: Remove uma sala
+      operationId: remover_sala_api_v1_sala__sala_id__delete
+      parameters:
+        - name: sala_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Sala Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaDados_SalaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sala/bloco/{bloco_id}:
+    get:
+      tags:
+        - Salas
+      summary: Listar Salas Por Bloco
+      description: Lista todas as salas de um bloco
+      operationId: listar_salas_por_bloco_api_v1_sala_bloco__bloco_id__get
+      parameters:
+        - name: bloco_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            title: Bloco Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaLista_SalaResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    BlocoCreate:
+      properties:
+        nome:
+          type: string
+          title: Nome
+        identificacao:
+          type: string
+          title: Identificacao
+      type: object
+      required:
+        - nome
+        - identificacao
+      title: BlocoCreate
+      description: Schema para criação de bloco
+    BlocoResponse:
+      properties:
+        nome:
+          type: string
+          title: Nome
+        identificacao:
+          type: string
+          title: Identificacao
+        id:
+          type: string
+          format: uuid
+          title: Id
+        criado_em:
+          type: string
+          format: date-time
+          title: Criado Em
+        atualizado_em:
+          type: string
+          format: date-time
+          title: Atualizado Em
+      type: object
+      required:
+        - nome
+        - identificacao
+        - id
+        - criado_em
+        - atualizado_em
+      title: BlocoResponse
+      description: Schema para resposta de bloco
+    BlocoUpdate:
+      properties:
+        nome:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Nome
+        identificacao:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Identificacao
+      type: object
+      title: BlocoUpdate
+      description: Schema para atualização de bloco
+    FrequenciaRecorrencia:
+      type: string
+      enum:
+        - DIARIA
+        - SEMANAL
+        - MENSAL
+      title: FrequenciaRecorrencia
+      description: Enum para frequência de recorrência
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InformacoesPaginacao:
+      properties:
+        total:
+          type: integer
+          title: Total
+          description: Total de registros
+        pagina:
+          type: integer
+          title: Pagina
+          description: Página atual
+        tamanho:
+          type: integer
+          title: Tamanho
+          description: Tamanho da página
+        total_paginas:
+          type: integer
+          title: Total Paginas
+          description: Total de páginas
+        proxima:
+          type: boolean
+          title: Proxima
+          description: Indica se existe próxima página
+        anterior:
+          type: boolean
+          title: Anterior
+          description: Indica se existe página anterior
+      type: object
+      required:
+        - total
+        - pagina
+        - tamanho
+        - total_paginas
+        - proxima
+        - anterior
+      title: InformacoesPaginacao
+      description: Informações de paginação
+    LoginRequisicao:
+      properties:
+        matricula:
+          type: string
+          title: Matricula
+          description: Matrícula do usuário
+        senha:
+          type: string
+          title: Senha
+          description: Senha do usuário
+      type: object
+      required:
+        - matricula
+        - senha
+      title: LoginRequisicao
+      description: Dados necessários para login
+    LoginResposta:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        refresh_token:
+          type: string
+          title: Refresh Token
+        expires_in:
+          type: string
+          format: date-time
+          title: Expires In
+        usuario:
+          $ref: '#/components/schemas/UsuarioResponse'
+      type: object
+      required:
+        - access_token
+        - refresh_token
+        - expires_in
+        - usuario
+      title: LoginResposta
+      description: Resposta do login com tokens
+    ReservaCreate:
+      properties:
+        sala_id:
+          type: string
+          format: uuid
+          title: Sala Id
+        inicio:
+          type: string
+          format: date-time
+          title: Inicio
+        fim:
+          type: string
+          format: date-time
+          title: Fim
+        usuario_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Usuario Id
+        motivo:
+          type: string
+          title: Motivo
+      type: object
+      required:
+        - sala_id
+        - inicio
+        - fim
+        - motivo
+      title: ReservaCreate
+      description: Schema para criação de reserva
+    ReservaRecorrenteCreate:
+      properties:
+        sala_id:
+          type: string
+          format: uuid
+          title: Sala Id
+        usuario_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Usuario Id
+        motivo:
+          type: string
+          title: Motivo
+        frequencia:
+          $ref: '#/components/schemas/FrequenciaRecorrencia'
+        dia_da_semana:
+          anyOf:
+            - items:
+                type: integer
+              type: array
+            - type: 'null'
+          title: Dia Da Semana
+        dia_do_mes:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Dia Do Mes
+        hora_inicio:
+          type: string
+          format: time
+          title: Hora Inicio
+        hora_fim:
+          type: string
+          format: time
+          title: Hora Fim
+        data_inicio:
+          type: string
+          format: date
+          title: Data Inicio
+        data_fim:
+          type: string
+          format: date
+          title: Data Fim
+        excecoes:
+          items:
+            type: string
+            format: date
+          type: array
+          title: Excecoes
+          default: []
+      type: object
+      required:
+        - sala_id
+        - motivo
+        - frequencia
+        - hora_inicio
+        - hora_fim
+        - data_inicio
+        - data_fim
+      title: ReservaRecorrenteCreate
+      description: Schema para criação de reserva recorrente
+    ReservaRecorrenteResponse:
+      properties:
+        sala_id:
+          type: string
+          format: uuid
+          title: Sala Id
+        usuario_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Usuario Id
+        motivo:
+          type: string
+          title: Motivo
+        frequencia:
+          $ref: '#/components/schemas/FrequenciaRecorrencia'
+        dia_da_semana:
+          anyOf:
+            - items:
+                type: integer
+              type: array
+            - type: 'null'
+          title: Dia Da Semana
+        dia_do_mes:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Dia Do Mes
+        hora_inicio:
+          type: string
+          format: time
+          title: Hora Inicio
+        hora_fim:
+          type: string
+          format: time
+          title: Hora Fim
+        data_inicio:
+          type: string
+          format: date
+          title: Data Inicio
+        data_fim:
+          type: string
+          format: date
+          title: Data Fim
+        excecoes:
+          items:
+            type: string
+            format: date
+          type: array
+          title: Excecoes
+          default: []
+        id:
+          type: string
+          format: uuid
+          title: Id
+        criado_em:
+          type: string
+          format: date-time
+          title: Criado Em
+        atualizado_em:
+          type: string
+          format: date-time
+          title: Atualizado Em
+      type: object
+      required:
+        - sala_id
+        - motivo
+        - frequencia
+        - hora_inicio
+        - hora_fim
+        - data_inicio
+        - data_fim
+        - id
+        - criado_em
+        - atualizado_em
+      title: ReservaRecorrenteResponse
+      description: Schema para resposta de reserva recorrente
+    ReservaRecorrenteUpdate:
+      properties:
+        motivo:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Motivo
+        frequencia:
+          anyOf:
+            - $ref: '#/components/schemas/FrequenciaRecorrencia'
+            - type: 'null'
+        dia_da_semana:
+          anyOf:
+            - items:
+                type: integer
+              type: array
+            - type: 'null'
+          title: Dia Da Semana
+        data_inicio:
+          anyOf:
+            - type: string
+              format: date
+            - type: 'null'
+          title: Data Inicio
+        hora_inicio:
+          anyOf:
+            - type: string
+              format: time
+            - type: 'null'
+          title: Hora Inicio
+        hora_fim:
+          anyOf:
+            - type: string
+              format: time
+            - type: 'null'
+          title: Hora Fim
+        data_fim:
+          anyOf:
+            - type: string
+              format: date
+            - type: 'null'
+          title: Data Fim
+        excecoes:
+          anyOf:
+            - items:
+                type: string
+                format: date
+              type: array
+            - type: 'null'
+          title: Excecoes
+      type: object
+      title: ReservaRecorrenteUpdate
+      description: Schema para atualização de reserva recorrente
+    ReservaResponse:
+      properties:
+        sala_id:
+          type: string
+          format: uuid
+          title: Sala Id
+        inicio:
+          type: string
+          format: date-time
+          title: Inicio
+        fim:
+          type: string
+          format: date-time
+          title: Fim
+        usuario_id:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+          title: Usuario Id
+        motivo:
+          type: string
+          title: Motivo
+        id:
+          type: string
+          format: uuid
+          title: Id
+        criado_em:
+          type: string
+          format: date-time
+          title: Criado Em
+        atualizado_em:
+          type: string
+          format: date-time
+          title: Atualizado Em
+        sala:
+          $ref: '#/components/schemas/SalaResponse'
+        usuario:
+          $ref: '#/components/schemas/UsuarioResponse'
+      type: object
+      required:
+        - sala_id
+        - inicio
+        - fim
+        - motivo
+        - id
+        - criado_em
+        - atualizado_em
+        - sala
+        - usuario
+      title: ReservaResponse
+      description: Schema para resposta de reserva
+    ReservaUpdate:
+      properties:
+        inicio:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Inicio
+        fim:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Fim
+        motivo:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Motivo
+      type: object
+      title: ReservaUpdate
+      description: Schema para atualização de reserva
+    RespostaDados_BlocoResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          $ref: '#/components/schemas/BlocoResponse'
+          description: Dados da resposta
+      type: object
+      required:
+        - dados
+      title: RespostaDados[BlocoResponse]
+    RespostaDados_ReservaRecorrenteResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          $ref: '#/components/schemas/ReservaRecorrenteResponse'
+          description: Dados da resposta
+      type: object
+      required:
+        - dados
+      title: RespostaDados[ReservaRecorrenteResponse]
+    RespostaDados_ReservaResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          $ref: '#/components/schemas/ReservaResponse'
+          description: Dados da resposta
+      type: object
+      required:
+        - dados
+      title: RespostaDados[ReservaResponse]
+    RespostaDados_SalaResponseDetalhada_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          $ref: '#/components/schemas/SalaResponseDetalhada'
+          description: Dados da resposta
+      type: object
+      required:
+        - dados
+      title: RespostaDados[SalaResponseDetalhada]
+    RespostaDados_SalaResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          $ref: '#/components/schemas/SalaResponse'
+          description: Dados da resposta
+      type: object
+      required:
+        - dados
+      title: RespostaDados[SalaResponse]
+    RespostaDados_UsuarioResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          $ref: '#/components/schemas/UsuarioResponse'
+          description: Dados da resposta
+      type: object
+      required:
+        - dados
+      title: RespostaDados[UsuarioResponse]
+    RespostaLista_SalaResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          items:
+            $ref: '#/components/schemas/SalaResponse'
+          type: array
+          title: Dados
+          description: Lista de dados
+      type: object
+      required:
+        - dados
+      title: RespostaLista[SalaResponse]
+    RespostaPaginada_BlocoResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          items:
+            $ref: '#/components/schemas/BlocoResponse'
+          type: array
+          title: Dados
+          description: Lista de dados
+        paginacao:
+          $ref: '#/components/schemas/InformacoesPaginacao'
+      type: object
+      required:
+        - dados
+        - paginacao
+      title: RespostaPaginada[BlocoResponse]
+    RespostaPaginada_ReservaRecorrenteResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          items:
+            $ref: '#/components/schemas/ReservaRecorrenteResponse'
+          type: array
+          title: Dados
+          description: Lista de dados
+        paginacao:
+          $ref: '#/components/schemas/InformacoesPaginacao'
+      type: object
+      required:
+        - dados
+        - paginacao
+      title: RespostaPaginada[ReservaRecorrenteResponse]
+    RespostaPaginada_ReservaResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          items:
+            $ref: '#/components/schemas/ReservaResponse'
+          type: array
+          title: Dados
+          description: Lista de dados
+        paginacao:
+          $ref: '#/components/schemas/InformacoesPaginacao'
+      type: object
+      required:
+        - dados
+        - paginacao
+      title: RespostaPaginada[ReservaResponse]
+    RespostaPaginada_SalaResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          items:
+            $ref: '#/components/schemas/SalaResponse'
+          type: array
+          title: Dados
+          description: Lista de dados
+        paginacao:
+          $ref: '#/components/schemas/InformacoesPaginacao'
+      type: object
+      required:
+        - dados
+        - paginacao
+      title: RespostaPaginada[SalaResponse]
+    RespostaPaginada_UsuarioResponse_:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Status da resposta (sucesso/erro)
+          default: sucesso
+        mensagem:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Mensagem
+          description: Mensagem opcional da resposta
+        data_hora:
+          type: string
+          format: date-time
+          title: Data Hora
+          description: Data e hora da resposta
+        dados:
+          items:
+            $ref: '#/components/schemas/UsuarioResponse'
+          type: array
+          title: Dados
+          description: Lista de dados
+        paginacao:
+          $ref: '#/components/schemas/InformacoesPaginacao'
+      type: object
+      required:
+        - dados
+        - paginacao
+      title: RespostaPaginada[UsuarioResponse]
+    SalaCreate:
+      properties:
+        bloco_id:
+          type: string
+          format: uuid
+          title: Bloco Id
+        identificacao_sala:
+          type: string
+          title: Identificacao Sala
+        capacidade_maxima:
+          type: integer
+          title: Capacidade Maxima
+        recursos:
+          items:
+            type: string
+          type: array
+          title: Recursos
+          default: []
+        uso_restrito:
+          type: boolean
+          title: Uso Restrito
+          default: false
+        curso_restrito:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Curso Restrito
+      type: object
+      required:
+        - bloco_id
+        - identificacao_sala
+        - capacidade_maxima
+      title: SalaCreate
+      description: Schema para criação de sala
+    SalaResponse:
+      properties:
+        bloco_id:
+          type: string
+          format: uuid
+          title: Bloco Id
+        identificacao_sala:
+          type: string
+          title: Identificacao Sala
+        capacidade_maxima:
+          type: integer
+          title: Capacidade Maxima
+        recursos:
+          items:
+            type: string
+          type: array
+          title: Recursos
+          default: []
+        uso_restrito:
+          type: boolean
+          title: Uso Restrito
+          default: false
+        curso_restrito:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Curso Restrito
+        id:
+          type: string
+          format: uuid
+          title: Id
+        criado_em:
+          type: string
+          format: date-time
+          title: Criado Em
+        atualizado_em:
+          type: string
+          format: date-time
+          title: Atualizado Em
+      type: object
+      required:
+        - bloco_id
+        - identificacao_sala
+        - capacidade_maxima
+        - id
+        - criado_em
+        - atualizado_em
+      title: SalaResponse
+      description: Schema para resposta de sala
+    SalaResponseDetalhada:
+      properties:
+        bloco_id:
+          type: string
+          format: uuid
+          title: Bloco Id
+        identificacao_sala:
+          type: string
+          title: Identificacao Sala
+        capacidade_maxima:
+          type: integer
+          title: Capacidade Maxima
+        recursos:
+          items:
+            type: string
+          type: array
+          title: Recursos
+          default: []
+        uso_restrito:
+          type: boolean
+          title: Uso Restrito
+          default: false
+        curso_restrito:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Curso Restrito
+        id:
+          type: string
+          format: uuid
+          title: Id
+        criado_em:
+          type: string
+          format: date-time
+          title: Criado Em
+        atualizado_em:
+          type: string
+          format: date-time
+          title: Atualizado Em
+        bloco:
+          $ref: '#/components/schemas/BlocoResponse'
+      type: object
+      required:
+        - bloco_id
+        - identificacao_sala
+        - capacidade_maxima
+        - id
+        - criado_em
+        - atualizado_em
+        - bloco
+      title: SalaResponseDetalhada
+      description: Schema para resposta detalhada de sala, incluindo o bloco
+    SalaUpdate:
+      properties:
+        identificacao_sala:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Identificacao Sala
+        capacidade_maxima:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Capacidade Maxima
+        recursos:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Recursos
+        uso_restrito:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Uso Restrito
+        curso_restrito:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Curso Restrito
+      type: object
+      title: SalaUpdate
+      description: Schema para atualização de sala
+    UsuarioCreate:
+      properties:
+        nome:
+          type: string
+          title: Nome
+        email:
+          type: string
+          format: email
+          title: Email
+        matricula:
+          type: string
+          title: Matricula
+        curso:
+          type: string
+          title: Curso
+        ativo:
+          type: boolean
+          title: Ativo
+          default: true
+        super_user:
+          type: boolean
+          title: Super User
+          default: false
+        senha:
+          type: string
+          title: Senha
+      type: object
+      required:
+        - nome
+        - email
+        - matricula
+        - curso
+        - senha
+      title: UsuarioCreate
+      description: Schema para criação de usuário
+    UsuarioResponse:
+      properties:
+        nome:
+          type: string
+          title: Nome
+        email:
+          type: string
+          format: email
+          title: Email
+        matricula:
+          type: string
+          title: Matricula
+        curso:
+          type: string
+          title: Curso
+        ativo:
+          type: boolean
+          title: Ativo
+          default: true
+        super_user:
+          type: boolean
+          title: Super User
+          default: false
+        id:
+          type: string
+          format: uuid
+          title: Id
+        ultimo_login:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Ultimo Login
+        criado_em:
+          type: string
+          format: date-time
+          title: Criado Em
+        atualizado_em:
+          type: string
+          format: date-time
+          title: Atualizado Em
+      type: object
+      required:
+        - nome
+        - email
+        - matricula
+        - curso
+        - id
+        - criado_em
+        - atualizado_em
+      title: UsuarioResponse
+      description: Schema para resposta de usuário
+    UsuarioUpdate:
+      properties:
+        nome:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Nome
+        email:
+          anyOf:
+            - type: string
+              format: email
+            - type: 'null'
+          title: Email
+        matricula:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Matricula
+        curso:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Curso
+        ativo:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Ativo
+        senha:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Senha
+      type: object
+      title: UsuarioUpdate
+      description: Schema para atualização de usuário
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter JWT Bearer token
+security:
+  - JWT: []

@@ -30,7 +30,7 @@ class ParametrosPaginacao(BaseModel):
 
     pagina: int = Field(default=1, ge=1, description="Número da página")
     tamanho: int = Field(
-        default=10, ge=1, le=100, description="Quantidade de itens por página"
+        default=10, ge=1, le=1000, description="Quantidade de itens por página"
     )
     ordenar_por: str = Field(default="id", description="Campo para ordenação")
     ordenacao: str = Field(

@@ -1,7 +1,7 @@
 from typing import List
 from datetime import datetime, date
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload
 from uuid import UUID
 
@@ -94,8 +94,8 @@ class ReservaRepository(BaseRepository):
             .filter(
                 and_(
                     Reserva.sala_id == sala_id,
-                    Reserva.inicio == data,
-                    Reserva.excluido_em.is_(None),  # apenas reservas não excluídas
+                    func.date(Reserva.inicio) == data,
+                    Reserva.excluido_em.is_(None),
                 )
             )
             .all()

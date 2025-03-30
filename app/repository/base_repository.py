@@ -56,6 +56,13 @@ class BaseRepository:
         except Exception as e:
             self.session.rollback()
             raise BusinessException(f"Erro ao salvar registro: {str(e)}")
+        
+    def create(self, model: T) -> T:
+        """Cria um novo registro"""
+        self.session.add(model)
+        self.session.commit()
+        self.session.refresh(model)
+        return model
 
     def delete(self, id: Any) -> None:
         """Remove um registro"""

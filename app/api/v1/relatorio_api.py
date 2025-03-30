@@ -4,7 +4,7 @@ from app.core.security.auth_dependencies import AuthDependencies
 router = APIRouter(
     prefix="/relatorio",
     tags=["Relatórios"],
-    dependencies=[Depends(AuthDependencies.get_current_active_superuser)],
+    dependencies=[Depends(AuthDependencies.get_current_user)],
 )
 
 # @router.get("/uso-salas", response_model=RelatorioUsoSalas)

@@ -9,6 +9,7 @@ from app.api.v1.usuario_api import router as usuario_router
 from app.api.v1.reserva_api import router as reserva_router
 from app.api.v1.bloco_api import router as bloco_router
 from app.api.v1.sala_api import router as sala_router
+from app.api.v1.semestre_api import router as semestre_router
 from app.core.config.settings import settings
 from app.core.config.logging import setup_logging
 from app.core.database.database import init_db
@@ -52,7 +53,7 @@ def create_app() -> FastAPI:
     setup_logging()
 
     # Initialize database
-    init_db()
+    # init_db()
 
     # Register exception handlers
     app.add_exception_handler(BaseAPIException, api_exception_handler)
@@ -98,6 +99,7 @@ def create_app() -> FastAPI:
     app.include_router(reserva_router, prefix=settings.API_V1_STR)
     app.include_router(bloco_router, prefix=settings.API_V1_STR)
     app.include_router(sala_router, prefix=settings.API_V1_STR)
+    app.include_router(semestre_router, prefix=settings.API_V1_STR)
     return app
 
 

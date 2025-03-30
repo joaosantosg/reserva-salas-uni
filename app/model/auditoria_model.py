@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, event
 from sqlalchemy.orm import relationship
 from app.model.base_model import BaseModel
 from app.util.datetime_utils import DateTimeUtils
+from app.util.json_utils import serialize_to_json
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -74,11 +75,6 @@ def registrar_auditoria_reserva(mapper, connection, target):
     """
     Event listener para registrar mudanças em reservas.
     Acionado apenas para entidades Reserva e ReservaRecorrente.
-
-    Args:
-        mapper: Mapper SQLAlchemy da entidade
-        connection: Conexão com o banco de dados
-        target: Instância da reserva sendo modificada
     """
     if not hasattr(target, "id"):
         return
@@ -86,13 +82,17 @@ def registrar_auditoria_reserva(mapper, connection, target):
     # Determina se é uma reserva simples ou recorrente
     is_recorrente = target.__tablename__ == "reservas_recorrentes"
 
+    # Limpa os dados para JSON
+    dados_novos = serialize_to_json(target.__dict__)
+    dados_anteriores = serialize_to_json(mapper.old_state) if mapper.old_state else None
+
     auditoria = AuditoriaReserva(
         reserva_id=None if is_recorrente else target.id,
         reserva_recorrente_id=target.id if is_recorrente else None,
         acao="criar" if mapper.is_insert else "atualizar",
-        dados_novos=target.__dict__,
-        dados_anteriores=mapper.old_state if mapper.old_state else None,
-        usuario_id=target.usuario_id,  # Assume que a reserva tem usuario_id
+        dados_novos=dados_novos,
+        dados_anteriores=dados_anteriores,
+        usuario_id=target.usuario_id,
         criado_em=DateTimeUtils.now(),
     )
     connection.execute(auditoria.__table__.insert(), auditoria.__dict__)
@@ -101,22 +101,20 @@ def registrar_auditoria_reserva(mapper, connection, target):
 def registrar_delete_reserva(mapper, connection, target):
     """
     Event listener para registrar cancelamentos de reservas.
-
-    Args:
-        mapper: Mapper SQLAlchemy da entidade
-        connection: Conexão com o banco de dados
-        target: Instância da reserva sendo cancelada
     """
     if not hasattr(target, "id"):
         return
 
     is_recorrente = target.__tablename__ == "reservas_recorrentes"
 
+    # Limpa os dados para JSON
+    dados_anteriores = serialize_to_json(target.__dict__)
+
     auditoria = AuditoriaReserva(
         reserva_id=None if is_recorrente else target.id,
         reserva_recorrente_id=target.id if is_recorrente else None,
         acao="cancelar",
-        dados_anteriores=target.__dict__,
+        dados_anteriores=dados_anteriores,
         usuario_id=target.usuario_id,
         criado_em=DateTimeUtils.now(),
     )

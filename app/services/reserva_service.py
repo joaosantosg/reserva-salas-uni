@@ -17,6 +17,7 @@ from app.schema.reserva_schema import (
 )
 
 from app.services.email_service import EmailService
+from app.services.auditoria_service import AuditoriaService
 
 
 class ReservaService:
@@ -28,11 +29,13 @@ class ReservaService:
         sala_repository: SalaRepository,
         usuario_repository: UsuarioRepository,
         email_service: EmailService,
+        auditoria_service: AuditoriaService,
     ):
         self.reserva_repository = reserva_repository
         self.sala_repository = sala_repository
         self.usuario_repository = usuario_repository
         self.email_service = email_service
+        self.auditoria_service = auditoria_service
 
     def get_by_id(self, reserva_id: UUID) -> Reserva:
         """Busca uma reserva pelo ID"""
@@ -57,12 +60,22 @@ class ReservaService:
 
         # Valida datas e horários
         self._validar_datas(reserva_data.inicio, reserva_data.fim)
+        
+        # Verifica conflitos antes de criar
         self._verificar_conflitos(reserva_data)
 
         # Cria a reserva
         reserva = Reserva(**reserva_data.model_dump())
         reserva.usuario_id = usuario_id
         reserva = self.reserva_repository.save(reserva)
+
+        # Registra a auditoria
+        # self.auditoria_service.registrar_criacao_reserva(
+        #     reserva_id=reserva.id,
+        #     dados_novos=reserva.__dict__,
+        #     usuario_id=usuario_id,
+        #     ip_address="",
+        # )
 
         # Envia notificações
         self.email_service.notificar_reserva_criada(reserva, usuario)
@@ -90,16 +103,20 @@ class ReservaService:
             fim = reserva_data.fim or reserva.fim
             self._validar_datas(inicio, fim)
 
-            # Atualiza os dados
-            reserva_data_dict = reserva_data.model_dump(exclude_unset=True)
-            for key, value in reserva_data_dict.items():
-                setattr(reserva, key, value)
-
             # Verifica conflitos com a nova data/hora
-            self._verificar_conflitos(reserva)
+            self._verificar_conflitos(reserva_data, reserva_id)
 
         # Atualiza a reserva
         reserva = self.reserva_repository.save(reserva)
+
+        # Registra a auditoria
+        # self.auditoria_service.registrar_atualizacao_reserva(
+        #     reserva_id=reserva_id,
+        #     dados_anteriores=reserva.__dict__,
+        #     dados_novos=reserva.__dict__,
+        #     usuario_id=usuario_id,
+        #     ip_address="",
+        # )
 
         # Envia notificações
         usuario = self.usuario_repository.get_by_id(usuario_id)
@@ -116,7 +133,7 @@ class ReservaService:
 
         # Verifica se o usuário é o dono da reserva
         if reserva.usuario_id != usuario_id:
-            raise BusinessException("Você não tem permissão para remover esta reserva")
+            raise BusinessException("Você não tem permissão para remover esta reserva, pois não é o dono da reserva")
 
         # Remove a reserva
         self.reserva_repository.delete(reserva_id)
@@ -143,19 +160,40 @@ class ReservaService:
                 "Não é possível criar/atualizar reservas para datas passadas"
             )
 
-    def _verificar_conflitos(self, reserva_data: ReservaCreate) -> None:
-        """Verifica se há conflitos de horário para a sala"""
+    def _verificar_conflitos(self, reserva_data: ReservaCreate, reserva_id: UUID = None) -> None:
+        """
+        Verifica se há conflitos de horário para a sala.
+        """
+        # Normaliza as datas de entrada para UTC sem timezone
+        inicio = reserva_data.inicio.replace(tzinfo=None)
+        fim = reserva_data.fim.replace(tzinfo=None)
+        
         # Busca reservas existentes para a sala no mesmo dia
         reservas_existentes = self.reserva_repository.get_by_sala_and_date(
-            reserva_data.sala_id, reserva_data.inicio.date()
+            reserva_data.sala_id, inicio.date()
         )
 
         # Verifica conflitos
         for reserva in reservas_existentes:
-            if reserva_data.inicio < reserva.fim and reserva_data.fim > reserva.inicio:
+            # Normaliza as datas da reserva existente
+            reserva_inicio = reserva.inicio.replace(tzinfo=None)
+            reserva_fim = reserva.fim.replace(tzinfo=None)
+            
+            # Ignora a própria reserva ao atualizar
+            if reserva_id and reserva.id == reserva_id:
+                continue
+                
+            # Verifica se há sobreposição de horários
+            if (
+                (inicio >= reserva_inicio and inicio < reserva_fim) or      # Início dentro do período
+                (fim > reserva_inicio and fim <= reserva_fim) or           # Fim dentro do período
+                (inicio <= reserva_inicio and fim >= reserva_fim) or       # Período engloba
+                (inicio == reserva_inicio and fim == reserva_fim)          # Período idêntico
+            ):
                 raise BusinessException(
-                    f"Já existe uma reserva para este horário: "
-                    f"{reserva.inicio.strftime('%H:%M')} - {reserva.fim.strftime('%H:%M')}"
+                    f"Conflito de horário: A sala já está reservada das "
+                    f"{reserva.inicio.strftime('%H:%M')} às {reserva.fim.strftime('%H:%M')}. "
+                    f"Não é possível fazer uma reserva que se sobreponha a este período."
                 )
 
     def _check_recorrente_conflict(

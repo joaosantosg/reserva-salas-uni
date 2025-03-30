@@ -1,7 +1,9 @@
-from typing import Generator
+from typing import Generator, Optional
 import logging
+from contextlib import contextmanager
 from sqlalchemy import create_engine, inspect
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.exc import SQLAlchemyError
 from app.core.config.settings import settings
 from app.model.base_model import Base
 
@@ -9,21 +11,7 @@ from app.model.base_model import Base
 logger = logging.getLogger(__name__)
 
 
-# Create engine for PostgreSQL
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    echo=settings.DEBUG,
-    pool_size=5,
-    max_overflow=10,
-    connect_args={"connect_timeout": 10, "application_name": settings.PROJECT_NAME},
-)
-
-# Create session factory - exposed for DI container
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-
-
-class Database:
+class DatabaseManager:
     """Classe para gerenciar conexões do banco de dados"""
 
     def __init__(self, db_url: str):
@@ -39,25 +27,60 @@ class Database:
             },
         )
         self.SessionLocal = sessionmaker(
-            bind=self.engine, autocommit=False, autoflush=False
+            bind=self.engine, 
+            autocommit=False, 
+            autoflush=False,
+            expire_on_commit=False  # Prevents expired object issues
         )
 
     def create_database(self) -> None:
         """Cria todas as tabelas no banco de dados"""
-        Base.metadata.create_all(bind=self.engine)
+        try:
+            Base.metadata.create_all(bind=self.engine)
+            logger.info("Tabelas criadas com sucesso")
+        except SQLAlchemyError as e:
+            logger.error(f"Erro ao criar tabelas: {str(e)}")
+            raise
 
-    def get_session(self) -> Generator:
+    @contextmanager
+    def get_session(self) -> Generator[Session, None, None]:
         """
-        Retorna uma nova sessão do banco de dados
+        Context manager para gerenciar sessões do banco de dados.
+        Garante que a sessão seja fechada mesmo em caso de erro.
 
         Yields:
             Session: Sessão do SQLAlchemy
+
+        Raises:
+            SQLAlchemyError: Se houver erro na operação do banco
         """
         session = self.SessionLocal()
         try:
             yield session
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            logger.error(f"Erro na operação do banco: {str(e)}")
+            raise
         finally:
             session.close()
+
+    def execute_in_session(self, operation):
+        """
+        Executa uma operação dentro de uma sessão do banco de dados.
+        Gerencia automaticamente commit/rollback.
+
+        Args:
+            operation: Função que recebe uma sessão e executa operações
+
+        Returns:
+            Resultado da operação
+
+        Raises:
+            SQLAlchemyError: Se houver erro na operação
+        """
+        with self.get_session() as session:
+            return operation(session)
 
     @property
     def session(self):
@@ -65,74 +88,75 @@ class Database:
         return self.get_session()
 
 
-def get_db() -> Generator:
+# Instância global do gerenciador de banco de dados
+db_manager = DatabaseManager(settings.DATABASE_URL)
+
+# Session factory para compatibilidade com o container de DI
+SessionLocal = db_manager.SessionLocal
+
+
+def get_db() -> Generator[Session, None, None]:
     """
-    Dependency para obter sessão do banco de dados
+    Dependency para obter sessão do banco de dados.
+    Usa o context manager para garantir limpeza adequada.
 
     Yields:
         Session: Sessão do SQLAlchemy
     """
-    db = SessionLocal()
+    session = None
     try:
-        yield db
+        session = db_manager.SessionLocal()
+        yield session
     finally:
-        db.close()
+        if session:
+            session.close()
 
 
 def init_db() -> None:
     """
-    Inicializa o banco de dados criando todas as tabelas
-    Utiliza logging para registrar o processo de criação
+    Inicializa o banco de dados criando todas as tabelas.
+    Utiliza logging para registrar o processo de criação.
     """
     logger.info("Iniciando criação das tabelas no banco de dados")
 
-    inspector = inspect(engine)
+    inspector = inspect(db_manager.engine)
     existing_tables = inspector.get_table_names()
-
-    # Get all tables from metadata
     tables_to_create = Base.metadata.tables.keys()
 
     logger.info(f"Tabelas existentes: {', '.join(existing_tables) or 'Nenhuma'}")
     logger.info(f"Tabelas a serem criadas: {', '.join(tables_to_create)}")
 
     try:
-        Base.metadata.create_all(bind=engine)
-
-        # Verify which tables were actually created
-        new_tables = set(inspector.get_table_names()) - set(existing_tables)
-        if new_tables:
-            logger.info(f"Tabelas criadas com sucesso: {', '.join(new_tables)}")
-        else:
-            logger.info("Nenhuma nova tabela precisou ser criada")
+        db_manager.create_database()
 
         # Verifica se Super User inicial foi criado
-        ## Bscar com email admin@admin.com
-        from app.repository.usuario_repository import UsuarioRepository
-        from app.model.usuario_model import Usuario
+        def create_super_user(session):
+            from app.repository.usuario_repository import UsuarioRepository
+            from app.model.usuario_model import Usuario
 
-        usuario_repository = UsuarioRepository(session=SessionLocal())
-        usuario = usuario_repository.get_by_email("admin@admin.com")
-        if not usuario:
-            logger.info("Super User inicial não encontrado, criando...")
-            usuario = Usuario(
-                nome="Admin",
-                email="admin@admin.com",
-                curso="Engenharia de Software",
-                matricula="1234567890",
-                ativo=True,
-                super_user=True,
-            )
-            usuario.set_senha("admin")
-            usuario_repository.save(usuario)
-            logger.info("Super User inicial criado com sucesso")
-            usuario_repository.session.commit()
-            usuario_repository.session.refresh(usuario)
-            logger.info(f"Super User inicial criado: {usuario.id}")
-        else:
-            logger.info(f"Super User inicial encontrado: {usuario.id}")
+            usuario_repository = UsuarioRepository(session=session)
+            usuario = usuario_repository.get_by_email("admin@admin.com")
+            
+            if not usuario:
+                logger.info("Super User inicial não encontrado, criando...")
+                usuario = Usuario(
+                    nome="Admin",
+                    email="admin@admin.com",
+                    curso="Engenharia de Software",
+                    matricula="1234567890",
+                    ativo=True,
+                    super_user=True,
+                )
+                usuario.set_senha("admin")
+                
+                usuario = usuario_repository.save(usuario)
+                logger.info(f"Super User inicial criado: {usuario.id}")
+            else:
+                logger.info(f"Super User inicial encontrado: {usuario.id}")
 
+        db_manager.execute_in_session(create_super_user)
         logger.info("Inicialização do banco de dados concluída com sucesso")
 
-    except Exception as e:
-        logger.error(f"Erro ao criar tabelas: {str(e)}")
+    except SQLAlchemyError as e:
+        logger.error(f"Erro ao inicializar banco de dados: {str(e)}")
         raise

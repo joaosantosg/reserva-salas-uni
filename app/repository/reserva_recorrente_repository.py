@@ -19,36 +19,36 @@ class ReservaRecorrenteRepository(BaseRepository):
         self.session = session
 
     def get_by_query(
-        self, query: ReservaRecorrenteFiltros
+        self, filtros: ReservaRecorrenteFiltros
     ) -> ReservasRecorrentesPaginadas:
         """Busca reservas recorrentes com filtros e paginação"""
         query = self.session.query(ReservaRecorrente)
 
-        if query.sala_id:
-            query = query.filter(ReservaRecorrente.sala_id == query.sala_id)
-        if query.coordenador_id:
-            query = query.filter(ReservaRecorrente.usuario_id == query.coordenador_id)
-        if query.frequencia:
-            query = query.filter(ReservaRecorrente.frequencia == query.frequencia)
-        if query.data_inicio:
-            query = query.filter(ReservaRecorrente.data_inicio >= query.data_inicio)
-        if query.data_fim:
-            query = query.filter(ReservaRecorrente.data_fim <= query.data_fim)
+        if filtros.sala_id:
+            query = query.filter(ReservaRecorrente.sala_id == filtros.sala_id)
+        if filtros.usuario_id:
+            query = query.filter(ReservaRecorrente.usuario_id == filtros.usuario_id)
+        if filtros.frequencia:
+            query = query.filter(ReservaRecorrente.frequencia == filtros.frequencia)
+        if filtros.data_inicio:
+            query = query.filter(ReservaRecorrente.data_inicio >= filtros.data_inicio)
+        if filtros.data_fim:
+            query = query.filter(ReservaRecorrente.data_fim <= filtros.data_fim)
 
-        offset = (query.pagina - 1) * query.tamanho
+        offset = (filtros.pagina - 1) * filtros.tamanho
         total = query.count()
-        items = query.offset(offset).limit(query.tamanho).all()
-        total_pages = (total + query.tamanho - 1) // query.tamanho
+        items = query.offset(offset).limit(filtros.tamanho).all()
+        total_pages = (total + filtros.tamanho - 1) // filtros.tamanho
 
         return ReservasRecorrentesPaginadas(
             items=items,
             paginacao=InformacoesPaginacao(
                 total=total,
-                pagina=query.pagina,
-                tamanho=query.tamanho,
+                pagina=filtros.pagina,
+                tamanho=filtros.tamanho,
                 total_paginas=total_pages,
-                proxima=query.pagina < total_pages,
-                anterior=query.pagina > 1,
+                proxima=filtros.pagina < total_pages,
+                anterior=filtros.pagina > 1,
             ),
         )
 
@@ -67,13 +67,15 @@ class ReservaRecorrenteRepository(BaseRepository):
             ReservaRecorrente.sala_id == sala_id,
             ReservaRecorrente.data_inicio <= data_fim,
             ReservaRecorrente.data_fim >= data_inicio,
-            ReservaRecorrente.dia_da_semana.overlap(dia_da_semana),
+            ReservaRecorrente.dia_da_semana.op('&&')(dia_da_semana),
+            ReservaRecorrente.hora_inicio <= hora_fim,
+            ReservaRecorrente.hora_fim >= hora_inicio,
         )
 
         if exclude_id:
             query = query.filter(ReservaRecorrente.id != exclude_id)
 
-        return query.first() is not None
+        return query.count() > 0
 
     def get_by_period(
         self, sala_id: str, data_inicio: date, data_fim: date

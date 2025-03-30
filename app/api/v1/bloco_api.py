@@ -17,7 +17,7 @@ from app.core.security.auth_dependencies import AuthDependencies
 router = APIRouter(
     prefix="/bloco",
     tags=["bloco"],
-    dependencies=[Depends(AuthDependencies.get_current_active_superuser)],
+    dependencies=[Depends(AuthDependencies.get_current_user)],
 )
 
 

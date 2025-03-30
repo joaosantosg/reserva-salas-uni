@@ -144,8 +144,8 @@ MAILGUN_DOMAIN=seu_dominio
 ## 📚 Documentação da API
 
 Após iniciar o servidor, acesse a documentação da API:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Swagger UI: https://joaosantosg.github.io/reserva-salas-uni
+
 
 ## 📄 Docker
 

@@ -112,7 +112,7 @@ async def criar_reserva_recorrente_regular(
     - MENSAL: "1ºDIA-SALA101-14H"
     """
     reserva.usuario_id = usuario.id
-    dados = service.create_regular(reserva, usuario.id)
+    dados = service.create_regular(reserva, usuario.id, usuario.curso)
     return RespostaDados(
         dados=dados,
         mensagem=f"Reserva recorrente regular criada com identificação: {dados.identificacao}",
@@ -133,7 +133,7 @@ async def criar_reserva_recorrente_semestre(
     As datas de início e fim são automaticamente definidas com base no semestre informado.
     """
     reserva.usuario_id = usuario.id
-    dados = service.create_semestre(reserva, usuario.id)
+    dados = service.create_semestre(reserva, usuario.id, usuario.curso  )
     return RespostaDados(
         dados=dados,
         mensagem=f"Reserva recorrente do semestre criada com identificação: {dados.identificacao}",
@@ -282,7 +282,7 @@ async def criar_reserva(
     service: ReservaService = Depends(Provide[Container.reserva_service]),
 ):
     reserva.usuario_id = usuario.id
-    dados = service.create(reserva, usuario.id)
+    dados = service.create(reserva, usuario.id, usuario.curso)
     return RespostaDados(dados=dados)
 
 

@@ -44,7 +44,7 @@ class ReservaService:
             raise NotFoundException(f"Reserva com ID {reserva_id} não encontrada")
         return reserva
 
-    def create(self, reserva_data: ReservaCreate, usuario_id: UUID) -> Reserva:
+    def create(self, reserva_data: ReservaCreate, usuario_id: UUID, curso_usuario: str) -> Reserva:
         """Cria uma nova reserva"""
         # Busca a sala
         sala = self.sala_repository.get_by_id(reserva_data.sala_id)
@@ -52,7 +52,13 @@ class ReservaService:
             raise NotFoundException(
                 f"Sala com ID {reserva_data.sala_id} não encontrada"
             )
-
+        print(f"Sala com ID {reserva_data.sala_id} é restrita para o curso {sala.curso_restrito}")
+        print(f"Curso do usuário: {curso_usuario}")
+        if sala.uso_restrito and curso_usuario != sala.curso_restrito:
+            print(f"Sala com ID {reserva_data.sala_id} é restrita para o curso {sala.curso_restrito}")
+            raise BusinessException(
+                f"Sala {sala.identificacao_sala} é restrita para o curso {sala.curso_restrito}"
+            )
         # Busca o usuário
         usuario = self.usuario_repository.get_by_id(usuario_id)
         if not usuario:
@@ -62,7 +68,9 @@ class ReservaService:
         self._validar_datas(reserva_data.inicio, reserva_data.fim)
         
         # Verifica conflitos antes de criar
-        self._verificar_conflitos(reserva_data)
+        self._verificar_conflitos(reserva_data, reserva_id=None)
+
+
 
         # Cria a reserva
         reserva = Reserva(**reserva_data.model_dump())

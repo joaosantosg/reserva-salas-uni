@@ -412,7 +412,7 @@ class ReservaRecorrenteService:
         return base_id
 
     def create_regular(
-        self, reserva_data: ReservaRecorrenteRegularCreate, usuario_id: UUID
+        self, reserva_data: ReservaRecorrenteRegularCreate, usuario_id: UUID, curso_usuario: str
     ) -> ReservaRecorrente:
         """Cria uma nova reserva recorrente regular e gera as reservas individuais"""
         # Busca a sala
@@ -421,7 +421,11 @@ class ReservaRecorrenteService:
             raise NotFoundException(
                 f"Sala com ID {reserva_data.sala_id} não encontrada"
             )
-
+        print(f"Sala com ID {reserva_data.sala_id} é restrita para o curso {sala.curso_restrito}")
+        if sala.uso_restrito and curso_usuario != sala.curso_restrito:
+            raise BusinessException(
+                f"Sala {sala.identificacao_sala} é restrita para o curso {sala.curso_restrito}"
+            )
         # Busca o usuário
         usuario = self.usuario_repository.get_by_id(usuario_id)
         if not usuario:
@@ -454,7 +458,7 @@ class ReservaRecorrenteService:
         return reserva_recorrente
 
     def create_semestre(
-        self, reserva_data: ReservaRecorrenteSemestreCreate, usuario_id: UUID
+        self, reserva_data: ReservaRecorrenteSemestreCreate, usuario_id: UUID, curso_usuario: str
     ) -> ReservaRecorrente:
         """Cria uma nova reserva recorrente baseada em um semestre"""
         # Busca a sala
@@ -462,6 +466,11 @@ class ReservaRecorrenteService:
         if not sala:
             raise NotFoundException(
                 f"Sala com ID {reserva_data.sala_id} não encontrada"
+            )
+        print(f"Sala com ID {reserva_data.sala_id} é restrita para o curso {sala.curso_restrito}")
+        if sala.uso_restrito and curso_usuario != sala.curso_restrito:
+            raise BusinessException(
+                f"Sala {sala.identificacao_sala} é restrita para o curso {sala.curso_restrito}"
             )
 
         # Busca o usuário

@@ -15,38 +15,22 @@ class DatabaseManager:
     """Classe para gerenciar conexões do banco de dados"""
 
     def __init__(self, db_url: str):
+        if not db_url:
+            raise ValueError("DATABASE_URL não pode estar vazio")
+
         self.engine = create_engine(
             db_url,
             pool_pre_ping=True,
-            echo=settings.DEBUG,
             pool_size=5,
-            max_overflow=10,
-            pool_timeout=30,
-            pool_recycle=1800,  # Recycle connections after 30 minutes
-            connect_args={
-                "connect_timeout": 10,
-                "application_name": settings.PROJECT_NAME,
-            },
+            connect_args={"connect_timeout": 10}
         )
         
-        # Create session factory with scoped session
-        self.SessionLocal = scoped_session(
-            sessionmaker(
-                bind=self.engine,
-                autocommit=False,
-                autoflush=False,
-                expire_on_commit=False
-            )
+        self.SessionLocal = sessionmaker(
+            bind=self.engine,
+            autocommit=False,
+            autoflush=False,
+            expire_on_commit=False
         )
-
-        # Add event listeners for connection management
-        @event.listens_for(self.engine, 'checkout')
-        def receive_checkout(dbapi_connection, connection_record, connection_proxy):
-            logger.debug("Connection checked out from pool")
-
-        @event.listens_for(self.engine, 'checkin')
-        def receive_checkin(dbapi_connection, connection_record):
-            logger.debug("Connection checked in to pool")
 
     def create_database(self) -> None:
         """Cria todas as tabelas no banco de dados"""
@@ -73,7 +57,6 @@ class DatabaseManager:
             raise
         finally:
             session.close()
-            self.SessionLocal.remove()
 
     def execute_in_session(self, operation):
         """
@@ -103,20 +86,18 @@ class DatabaseManager:
         return self.get_session()
 
 
-# Instância global do gerenciador de banco de dados
+# Create a global instance of DatabaseManager
 db_manager = DatabaseManager(settings.DATABASE_URL)
 
-# Session factory para compatibilidade com o container de DI
+# Export SessionLocal for dependency injection
 SessionLocal = db_manager.SessionLocal
 
-
-def get_db() -> Generator[Session, None, None]:
-    """
-    Dependency para obter sessão do banco de dados.
-    Usa o context manager para garantir limpeza adequada.
-    """
-    with db_manager.get_session() as session:
-        yield session
+def get_db() -> Session:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def init_db() -> None:
@@ -126,7 +107,7 @@ def init_db() -> None:
     """
     logger.info("Iniciando criação das tabelas no banco de dados")
 
-    inspector = inspect(db_manager.engine)
+    inspector = inspect(DatabaseManager(settings.DATABASE_URL).engine)
     existing_tables = inspector.get_table_names()
     tables_to_create = Base.metadata.tables.keys()
 
@@ -135,6 +116,7 @@ def init_db() -> None:
 
     try:
         db_manager.create_database()
+        logger.info("Database initialized successfully")
 
         # Verifica se Super User inicial foi criado
         def create_super_user(session):
@@ -165,5 +147,5 @@ def init_db() -> None:
         logger.info("Inicialização do banco de dados concluída com sucesso")
 
     except SQLAlchemyError as e:
-        logger.error(f"Erro ao inicializar banco de dados: {str(e)}")
+        logger.error(f"Database initialization error: {e}")
         raise

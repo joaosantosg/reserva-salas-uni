@@ -1,9 +1,9 @@
 from typing import Generator, Optional
 import logging
 from contextlib import contextmanager
-from sqlalchemy import create_engine, inspect
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import create_engine, inspect, event
+from sqlalchemy.orm import sessionmaker, Session, scoped_session
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from app.core.config.settings import settings
 from app.model.base_model import Base
 
@@ -21,17 +21,32 @@ class DatabaseManager:
             echo=settings.DEBUG,
             pool_size=5,
             max_overflow=10,
+            pool_timeout=30,
+            pool_recycle=1800,  # Recycle connections after 30 minutes
             connect_args={
                 "connect_timeout": 10,
                 "application_name": settings.PROJECT_NAME,
             },
         )
-        self.SessionLocal = sessionmaker(
-            bind=self.engine, 
-            autocommit=False, 
-            autoflush=False,
-            expire_on_commit=False  # Prevents expired object issues
+        
+        # Create session factory with scoped session
+        self.SessionLocal = scoped_session(
+            sessionmaker(
+                bind=self.engine,
+                autocommit=False,
+                autoflush=False,
+                expire_on_commit=False
+            )
         )
+
+        # Add event listeners for connection management
+        @event.listens_for(self.engine, 'checkout')
+        def receive_checkout(dbapi_connection, connection_record, connection_proxy):
+            logger.debug("Connection checked out from pool")
+
+        @event.listens_for(self.engine, 'checkin')
+        def receive_checkin(dbapi_connection, connection_record):
+            logger.debug("Connection checked in to pool")
 
     def create_database(self) -> None:
         """Cria todas as tabelas no banco de dados"""
@@ -47,12 +62,6 @@ class DatabaseManager:
         """
         Context manager para gerenciar sessões do banco de dados.
         Garante que a sessão seja fechada mesmo em caso de erro.
-
-        Yields:
-            Session: Sessão do SQLAlchemy
-
-        Raises:
-            SQLAlchemyError: Se houver erro na operação do banco
         """
         session = self.SessionLocal()
         try:
@@ -64,23 +73,29 @@ class DatabaseManager:
             raise
         finally:
             session.close()
+            self.SessionLocal.remove()
 
     def execute_in_session(self, operation):
         """
         Executa uma operação dentro de uma sessão do banco de dados.
         Gerencia automaticamente commit/rollback.
-
-        Args:
-            operation: Função que recebe uma sessão e executa operações
-
-        Returns:
-            Resultado da operação
-
-        Raises:
-            SQLAlchemyError: Se houver erro na operação
         """
         with self.get_session() as session:
-            return operation(session)
+            try:
+                return operation(session)
+            except OperationalError as e:
+                logger.error(f"Erro de operação no banco: {str(e)}")
+                raise
+            except SQLAlchemyError as e:
+                logger.error(f"Erro SQLAlchemy: {str(e)}")
+                raise
+            except Exception as e:
+                logger.error(f"Erro inesperado: {str(e)}")
+                raise
+
+    def close_all_sessions(self):
+        """Fecha todas as sessões ativas"""
+        self.SessionLocal.remove()
 
     @property
     def session(self):
@@ -99,17 +114,9 @@ def get_db() -> Generator[Session, None, None]:
     """
     Dependency para obter sessão do banco de dados.
     Usa o context manager para garantir limpeza adequada.
-
-    Yields:
-        Session: Sessão do SQLAlchemy
     """
-    session = None
-    try:
-        session = db_manager.SessionLocal()
+    with db_manager.get_session() as session:
         yield session
-    finally:
-        if session:
-            session.close()
 
 
 def init_db() -> None:

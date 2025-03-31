@@ -1,231 +1,186 @@
-# Reserva de Salas UNI
+# 🎓 Reserva de Salas UNI  
 
-Sistema de reserva de salas para universidades, desenvolvido com FastAPI e arquitetura limpa.
+Um sistema de reservas de salas universitárias feito com **FastAPI**, uma pitada de organização e talvez mais alguma coisa
 
-## 🚀 Sobre o Projeto
+---
 
-O **Reserva de Salas UNI** é uma aplicação web para gerenciamento de reservas de salas em ambientes universitários.
-O sistema permite que usuários, como professores e coordenadores, possam reservar salas para aulas, reuniões e outros eventos de forma simples e eficaz.
+## 🚀 O que é isso?  
 
-### Principais Funcionalidades
+O **Reserva de Salas UNI** é um sistema web que ajuda professores, coordenadores e afins a garantirem um espacinho na universidade sem precisar sair caçando uma sala vazia pelo campus. A ideia é simples: você reserva, usa e pronto! Nada de conflitos, bagunça ou salas ocupadas sem avisar.  
 
-- Autenticação e autorização de usuários
-- Gerenciamento de blocos e salas
-- Reservas únicas e recorrentes
-- Notificações por email
-- Interface REST API
-- Documentação automática com Swagger/OpenAPI
+### 📌 O que dá pra fazer?  
 
-## 🏗️ Arquitetura
+- 🔑 **Autenticação e autorização** – porque segurança é coisa séria!  
+- 🏫 **Gerenciar blocos e salas** – tudo organizadinho, como deve ser.  
+- 📆 **Criar reservas únicas e recorrentes** – sem precisar preencher tudo de novo toda semana.  
+- ✉️ **Receber notificações por e-mail** – "Ei, você tem uma sala reservada amanhã!"  
+- 📡 **Consumir uma API REST bem feita** – com **Swagger/OpenAPI** de brinde!  
 
-O projeto segue os princípios da Arquitetura Limpa (Clean Architecture) e utiliza:
+---
 
-- **FastAPI** para a API REST
-- **SQLAlchemy** para ORM
-- **PostgreSQL** como banco de dados
-- **Dependency Injection** para injeção de dependências
-- **JWT** para autenticação
-- **Pydantic** para validação de dados
+## 🏗️ Arquitetura: Porque Código Bonito é Código Feliz  
 
-### Estrutura de Models
+Esse projeto segue a **Arquitetura Limpa (Clean Architecture)**. Ou seja, nada de código confuso e desorganizado.  
 
-O sistema possui os seguintes modelos principais:
+**Tecnologias envolvidas:**  
 
-- `Usuario`: Gerenciamento de usuários do sistema
-- `Bloco`: Representa um bloco de salas
-- `Sala`: Representa uma sala específica
-- `Reserva`: Gerenciamento de reservas únicas
-- `ReservaRecorrente`: Gerenciamento de reservas recorrentes
-- `Auditoria`: Registro de ações no sistema
+- 🚀 **FastAPI** para a API REST  
+- 🏗 **SQLAlchemy** para o ORM  
+- 🗄 **PostgreSQL** como banco de dados  
+- 📦 **Dependency Injection** para facilitar a vida  
+- 🔐 **JWT** para autenticação  
+- ✅ **Pydantic** para validar os dados  
 
-## 🛠️ Requisitos
+---
 
-- Python 3.10+
-- Poetry para gerenciamento de dependências
-- Docker e Docker Compose (opcional)
-- PostgreSQL 15+
-- **Mailgun**: Necessário para envio de notificações por email. Para usar este recurso, será necessário configurar a chave API e o domínio no Mailgun (veja a seção de variáveis de ambiente abaixo).
+## 📂 Modelos do Sistema  
 
-## 🚀 Como Executar
+Dando nome aos bois, aqui estão os principais modelos do sistema:  
 
-### Usando Poetry
+- 👤 `Usuario`: Gerencia usuários do sistema  
+- 🏢 `Bloco`: Representa um bloco de salas  
+- 🚪 `Sala`: Representa uma sala específica  
+- 📆 `Reserva`: Para quem precisa de uma sala em um horário único  
+- 🔁 `ReservaRecorrente`: Para quem precisa sempre da mesma sala  
+- 🕵️ `Auditoria`: Para manter um histórico de tudo que acontece  
 
-1. Instale as dependências:
+---
+
+## 🛠️ O que você precisa para rodar isso?  
+
+- Python 3.10+  
+- **Poetry** para gerenciar as dependências  
+- Docker e Docker Compose (opcional, mas recomendado)  
+- PostgreSQL 15+  
+- Uma conta no **Mailgun** (caso queira receber e-mails do sistema)  
+
+---
+
+## 🎬 Como rodar esse bicho?  
+
+### Com Poetry  
+
+1️⃣ Instale as dependências:  
 ```bash
 poetry install
 ```
 
-2. Configure as variáveis de ambiente:
+2️⃣ Configure as variáveis de ambiente:  
 ```bash
 cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
 
-3. Inicie o servidor:
+3️⃣ Inicie o servidor:  
 ```bash
 poetry run uvicorn app.main:app --reload
 ```
 
-### Nota sobre o Banco de Dados
-> **Importante**: Atualmente, as tabelas são criadas automaticamente ao iniciar a aplicação. Futuramente, quando o modelo de dados estiver totalmente definido, serão implementadas migrations com Alembic para um controle mais preciso das alterações do banco de dados.
+💡 **Nota sobre o banco de dados:** Atualmente, as tabelas são criadas automaticamente, mas no futuro teremos migrations com **Alembic** para deixar tudo mais controlado.  
 
-### Usuário Inicial
-Ao iniciar a aplicação pela primeira vez, um super usuário é criado automaticamente com as seguintes credenciais:
-```
-Email: admin@admin.com
-Senha: admin
-Matrícula: 1234567890
-```
+### Rodando com Docker Compose  
 
-### Controle de Acesso
-- **Rotas de Usuário** (`/api/v1/usuarios/*`):
-  - Acesso exclusivo para super usuários
-  - Todas as operações CRUD de usuários requerem privilégios de super usuário
-
-- **Demais Rotas** (Blocos, Salas, Reservas):
-  - Acessíveis a qualquer usuário autenticado
-  - Requerem apenas autenticação JWT válida
-
-### Usando Docker Compose
-
-1. Configure as variáveis de ambiente:
+1️⃣ Configure as variáveis de ambiente:  
 ```bash
 cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
 
-2. Inicie os containers:
+2️⃣ Suba os containers:  
 ```bash
 docker-compose up -d
 ```
+---
 
-## 📝 Testes
+## 🎭 Controle de Acesso  
 
-### Testes Unitários
+- 🔒 **Usuários** (`/api/v1/usuarios/*`)  
+  - Só superusuários podem mexer aqui.  
+- 🔓 **Blocos, Salas e Reservas**  
+  - Qualquer usuário autenticado pode acessar.  
 
-Execute os testes com cobertura:
+💡 **Usuário inicial:**  
+Ao rodar pela primeira vez, um superusuário é criado automaticamente:  
+```text
+Email: admin@admin.com  
+Senha: admin  
+Matrícula: 1234567890  
+```
+
+---
+
+## 🧪 Testes (Porque Código Sem Teste é Código Suspeito)  
+
+Para rodar os testes e conferir a cobertura:  
+
 ```bash
-# Executar testes com relatório de cobertura no terminal
 poetry run pytest --cov=app --cov-report=term-missing
+```
 
-# Executar testes com relatório HTML
+Ou, se quiser um relatório HTML bonitão:  
+
+```bash
 poetry run pytest --cov=app --cov-report=html
 ```
 
-## 📝 Variáveis de Ambiente
+---
 
-Crie um arquivo `.env` baseado no `.env.example` com as seguintes variáveis:
+## 📬 Notificações por E-mail  
+
+Este sistema usa o **Mailgun** para enviar e-mails. Configure suas variáveis no `.env`:  
 
 ```env
-# Environment
-ENV=dev
-
-# Database
-DB=postgresql
-DB_USER=seu_usuario
-DB_PASSWORD=sua_senha
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=nome_do_banco
-
-# Auth
-SECRET_KEY=sua_chave_secreta
-
-# CORS
-BACKEND_CORS_ORIGINS=["*"]
-
-# Email (Mailgun)
-MAILGUN_API_KEY=sua_chave_api
-MAILGUN_DOMAIN=seu_dominio
+MAILGUN_API_KEY=sua_chave_api  
+MAILGUN_DOMAIN=seu_dominio  
 ```
 
-> **Nota**: O envio de notificações por e-mail depende da configuração correta do Mailgun. Certifique-se de adicionar sua chave API e o domínio correto nas variáveis acima.
+---
 
-## 📚 Documentação da API
+## 📚 Documentação da API  
 
-Após iniciar o servidor, acesse a documentação da API:
-- Swagger UI: https://joaosantosg.github.io/reserva-salas-uni
+Acesse a documentação gerada automaticamente pelo **Swagger**:  
+🔗 [Swagger UI](https://joaosantosg.github.io/reserva-salas-uni)  
+
+Ou veja a interface web experimental:  
+🔗 `https://redesigned-palm-tree-ten.vercel.app/`
+
+---
+
+## ✅ O que já está pronto?  
+
+- **✔️ Cadastro de Blocos e Salas** – CRUD completo, validação e tudo mais  
+- **✔️ Gerenciamento de Reservas** – criar, visualizar e cancelar reservas  
+- **✔️ Controle de Conflitos** – nada de duas reservas no mesmo horário!  
+- **✔️ Notificações e Logs** – e-mails automáticos e logs detalhados  
+- **✔️ API REST bem feita** – com status codes corretos e documentação linda  
+- **✔️ Segurança** – JWT, refresh tokens e controle de acesso  
+
+---
+
+## 🔜 Próximos Passos  
+
+Agora, algumas coisinhas que ainda estão na lista (mas que eu ainda não tive paciência pra terminar kkk):  
+
+- [ ] Bater **100% de cobertura de testes** (tem uns quebrados, mas eu chego lá)  
+- [ ] Melhorar as **notificações** (talvez WebSockets, ao invés de só e-mail)  
+- [ ] Criar um sistema de **aprovações** (tipo, alunos solicitam salas e coordenadores aprovam)  
+- [ ] Implementar **SSO (Single Sign-On)**  
+- [ ] Adicionar **recuperação de senha** (importante, né?)  
+
+---
+
+## 💡 Considerações Finais  
+
+Esse projeto foi super divertido de desenvolver! 😃  
+
+Depois de começar o frontend, percebi que mudaria várias coisas, mas tudo bem. O importante é que foi legal e um ótimo exercício.
+O projeto continua evoluindo e, sempre que sobra um tempo, dou um jeito de melhorar algo.  
+Claro, algumas regras podem ser ajustadas conforme o uso real. 
+Mas o foco sempre foi mostrar como construir algo bem estruturado e escalável!  
 
 
-## 📄 Docker
+---
 
-Como Construir e Executar a Aplicação com Docker:
-1. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env
-# Edite o arquivo .env com suas configurações
-```
+## 📝 Licença  
 
-2. Inicie os containers:
-```bash
-docker-compose up -d
-```
-
-## ✅ Requisitos Atendidos
-
-### 1. Cadastro de Blocos e Salas
-- ✅ Endpoints `/api/v1/blocos` e `/api/v1/salas` para CRUD completo
-- ✅ Validação de dados com Pydantic
-- ✅ Associação entre blocos e salas com SQLAlchemy
-
-### 2. Gerenciamento de Reservas
-- ✅ Endpoint `/api/v1/reservas` para:
-  - Criar reservas com todas as informações necessárias
-  - Visualizar disponibilidade
-  - Cancelar reservas
-- ✅ Validação completa de dados e regras de negócio
-
-### 3. Compartilhamento de Espaços
-- ✅ Sistema de permissões flexível
-- ✅ Validação de disponibilidade considerando restrições
-- ✅ Regras configuráveis por sala
-
-### 4. Conflitos de Agendamento
-- ✅ Validação automática de conflitos de horário
-- ✅ Sistema de reservas recorrentes implementado
-- ✅ Tratamento de exceções para casos especiais
-
-### 5. Notificações e Relatórios
-- ✅ Sistema de notificações via email usando Mailgun
-- ✅ Endpoints para relatórios de utilização
-- ✅ Logs detalhados de todas as operações
-
-### Bônus Implementados
-- ✅ **REST API Completa**
-  - Uso correto de verbos HTTP
-  - Status codes apropriados
-  - Documentação OpenAPI/Swagger
-- ✅ **Banco de Dados Otimizado**
-  - Modelagem eficiente com PostgreSQL
-  - Índices otimizados
-  - Relacionamentos bem definidos
-- ✅ **Autenticação e Segurança**
-  - JWT Authentication
-  - Refresh tokens
-  - Controle de acesso por papel
-- ✅ **Testes Automatizados**
-  - Testes unitários
-  - Testes de integração
-  - Cobertura de código
-
-## 🌐 Endpoints Disponíveis
-
-### API
-URL: `reserva-salas.poc.joaosantos.dev.br`
-
-### Interface Web
-URL: `https://redesigned-palm-tree-ten.vercel.app/`
-
-## 💭 Considerações Finais
-
-Este projeto foi bem divertido, adorei desenhar e modelar o sistema de reservas de salas. 
-Embora, depois de começar o frontend, tenha percebido que faria várias coisas de maneira diferente, o desafio de backend realmente fez minha noite mais divertida. 
-Foi um ótimo exercício que trouxe muito aprendizado e me deixou empolgado para continuar desenvolvendo!
-Atualmente, estou trabalhando em um frontend para dar vida aos dados e tornar essa solução ainda mais incrível. Como estamos falando de uma POC (Prova de Conceito), o projeto está sempre evoluindo – o que você vê aqui provavelmente já passou por várias melhorias e novas funcionalidades desde que este texto foi escrito. Afinal, sempre que tenho um tempinho, estou lá ajustando e incrementando o código.
-É claro, algumas das regras de negócio e validações podem ser bem diferentes do que os usuários realmente precisam. Em um cenário real, essas decisões seriam tomadas junto com os stakeholders antes de colocar as mãos no código. Mas a ideia por trás desse projeto é justamente mostrar como se pode construir algo técnico e bem organizado, sem perder o foco na escalabilidade.
-
-No fim das contas, esse foi um projeto super divertido de desenvolver!
-
-## 📝 Licença
-
-Nota importante sobre a Licença: Este código é fornecido sob a Licença MIT, mas não pode ser utilizado para fins comerciais sem o meu consentimento prévio. Caso tenha interesse em utilizar o código para qualquer outra finalidade, entre em contato para obter a permissão necessária.
+Este projeto é open-source sob a **Licença MIT**, mas não pode ser usado para fins comerciais sem meu consentimento. Quer usar? Me chama antes! 🚀

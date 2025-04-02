@@ -1,58 +1,51 @@
-# 🎓 Reserva de Salas UNI  
+# Reserva de Salas UNI
 
-Um sistema de reservas de salas universitárias feito com **FastAPI**, uma pitada de organização e talvez mais alguma coisa
+Sistema de reserva de salas para universidades, desenvolvido com FastAPI e arquitetura limpa.
 
----
+## 🚀 Sobre o Projeto
 
-## 🚀 O que é isso?  
+O **Reserva de Salas UNI** é uma aplicação web para gerenciamento de reservas de salas em ambientes universitários.
+O sistema permite que usuários, como professores e coordenadores, possam reservar salas para aulas, reuniões e outros eventos de forma simples e eficaz.
 
-O **Reserva de Salas UNI** é um sistema web que ajuda professores, coordenadores e afins a garantirem um espacinho na universidade sem precisar sair caçando uma sala vazia pelo campus. A ideia é simples: você reserva, usa e pronto! Nada de conflitos, bagunça ou salas ocupadas sem avisar.  
+### Principais Funcionalidades
 
-### 📌 O que dá pra fazer?  
+- Autenticação e autorização de usuários
+- Gerenciamento de blocos e salas
+- Reservas únicas e recorrentes
+- Notificações por email
+- Interface REST API
+- Documentação automática com Swagger/OpenAPI
 
-- 🔑 **Autenticação e autorização** – porque segurança é coisa séria!  
-- 🏫 **Gerenciar blocos e salas** – tudo organizadinho, como deve ser.  
-- 📆 **Criar reservas únicas e recorrentes** – sem precisar preencher tudo de novo toda semana.  
-- ✉️ **Receber notificações por e-mail** – "Ei, você tem uma sala reservada amanhã!"  
-- 📡 **Consumir uma API REST bem feita** – com **Swagger/OpenAPI** de brinde!  
+## 🏗️ Arquitetura
 
----
+O projeto segue os princípios da Arquitetura Limpa (Clean Architecture) e utiliza:
 
-## 🏗️ Arquitetura: Porque Código Bonito é Código Feliz  
+- **FastAPI** para a API REST
+- **SQLAlchemy** para ORM
+- **PostgreSQL** como banco de dados
+- **Dependency Injection** para injeção de dependências
+- **JWT** para autenticação
+- **Pydantic** para validação de dados
 
-Esse projeto segue a **Arquitetura Limpa (Clean Architecture)**. Ou seja, nada de código confuso e desorganizado.  
+### Estrutura de Models
 
-**Tecnologias envolvidas:**  
+O sistema possui os seguintes modelos principais:
 
-- 🚀 **FastAPI** para a API REST  
-- 🏗 **SQLAlchemy** para o ORM  
-- 🗄 **PostgreSQL** como banco de dados  
-- 📦 **Dependency Injection** para facilitar a vida  
-- 🔐 **JWT** para autenticação  
-- ✅ **Pydantic** para validar os dados  
+- `Usuario`: Gerenciamento de usuários do sistema
+- `Bloco`: Representa um bloco de salas
+- `Sala`: Representa uma sala específica
+- `Reserva`: Gerenciamento de reservas únicas
+- `ReservaRecorrente`: Gerenciamento de reservas recorrentes
+- `Auditoria`: Registro de ações no sistema
+- `Semestre`: Para registrar inicio e fim dos semestres e gerenciar as reservas semestrais
 
----
+## 🛠️ Requisitos
 
-## 📂 Modelos do Sistema  
-
-Dando nome aos bois, aqui estão os principais modelos do sistema:  
-
-- 👤 `Usuario`: Gerencia usuários do sistema  
-- 🏢 `Bloco`: Representa um bloco de salas  
-- 🚪 `Sala`: Representa uma sala específica  
-- 📆 `Reserva`: Para quem precisa de uma sala em um horário único  
-- 🔁 `ReservaRecorrente`: Para quem precisa sempre da mesma sala  
-- 🕵️ `Auditoria`: Para manter um histórico de tudo que acontece  
-
----
-
-## 🛠️ O que você precisa para rodar isso?  
-
-- Python 3.10+  
-- **Poetry** para gerenciar as dependências  
-- Docker e Docker Compose (opcional, mas recomendado)  
-- PostgreSQL 15+  
-- Uma conta no **Mailgun** (caso queira receber e-mails do sistema)  
+- Python 3.10+
+- Poetry para gerenciamento de dependências
+- Docker e Docker Compose (opcional)
+- PostgreSQL 15+
+- **Mailgun**: Necessário para envio de notificações por email. Para usar este recurso, será necessário configurar a chave API e o domínio no Mailgun (veja a seção de variáveis de ambiente abaixo).
 
 ---
 
@@ -86,7 +79,7 @@ cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
 
-2️⃣ Suba os containers:  
+2. Inicie os containers:
 ```bash
 docker-compose up -d
 ```

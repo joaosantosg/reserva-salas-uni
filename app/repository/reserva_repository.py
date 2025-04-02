@@ -100,3 +100,158 @@ class ReservaRepository(BaseRepository):
             )
             .all()
         )
+
+    def get_by_date_range(self, data_inicio: datetime, data_fim: datetime) -> List[Reserva]:
+        """
+        Busca todas as reservas em um período específico.
+
+        Args:
+            data_inicio: Data inicial do período
+            data_fim: Data final do período
+
+        Returns:
+            Lista de reservas no período especificado
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(
+                and_(
+                    Reserva.inicio >= data_inicio,
+                    Reserva.fim <= data_fim,
+                    Reserva.excluido_em.is_(None),
+                )
+            )
+            .all()
+        )
+
+    def count_all(self) -> int:
+        """
+        Retorna o total de reservas ativas.
+
+        Returns:
+            Total de reservas ativas
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(Reserva.excluido_em.is_(None))
+            .count()
+        )
+
+    def count_by_date(self, data: date) -> int:
+        """
+        Retorna o total de reservas em uma data específica.
+
+        Args:
+            data: Data para contar as reservas
+
+        Returns:
+            Total de reservas na data especificada
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(
+                and_(
+                    func.date(Reserva.inicio) == data,
+                    Reserva.excluido_em.is_(None),
+                )
+            )
+            .count()
+        )
+
+    def count_by_date_range(self, data_inicio: date, data_fim: date) -> int:
+        """
+        Retorna o total de reservas em um período específico.
+
+        Args:
+            data_inicio: Data inicial do período
+            data_fim: Data final do período
+
+        Returns:
+            Total de reservas no período especificado
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(
+                and_(
+                    func.date(Reserva.inicio) >= data_inicio,
+                    func.date(Reserva.fim) <= data_fim,
+                    Reserva.excluido_em.is_(None),
+                )
+            )
+            .count()
+        )
+
+    def count_by_sala_and_date_range(self, sala_id: UUID, data_inicio: date, data_fim: date) -> int:
+        """
+        Retorna o total de reservas de uma sala em um período específico.
+
+        Args:
+            sala_id: ID da sala
+            data_inicio: Data inicial do período
+            data_fim: Data final do período
+
+        Returns:
+            Total de reservas da sala no período especificado
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(
+                and_(
+                    Reserva.sala_id == sala_id,
+                    func.date(Reserva.inicio) >= data_inicio,
+                    func.date(Reserva.fim) <= data_fim,
+                    Reserva.excluido_em.is_(None),
+                )
+            )
+            .count()
+        )
+
+    def count_by_usuario_and_date_range(self, usuario_id: UUID, data_inicio: date, data_fim: date) -> int:
+        """
+        Retorna o total de reservas de um usuário em um período específico.
+
+        Args:
+            usuario_id: ID do usuário
+            data_inicio: Data inicial do período
+            data_fim: Data final do período
+
+        Returns:
+            Total de reservas do usuário no período especificado
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(
+                and_(
+                    Reserva.usuario_id == usuario_id,
+                    func.date(Reserva.inicio) >= data_inicio,
+                    func.date(Reserva.fim) <= data_fim,
+                    Reserva.excluido_em.is_(None),
+                )
+            )
+            .count()
+        )
+
+    def get_by_sala_and_date_range(self, sala_id: UUID, data_inicio: date, data_fim: date) -> List[Reserva]:
+        """
+        Busca todas as reservas de uma sala em um período específico.
+
+        Args:
+            sala_id: ID da sala
+            data_inicio: Data inicial do período
+            data_fim: Data final do período
+
+        Returns:
+            Lista de reservas da sala no período especificado
+        """
+        return (
+            self.session.query(Reserva)
+            .filter(
+                and_(
+                    Reserva.sala_id == sala_id,
+                    func.date(Reserva.inicio) >= data_inicio,
+                    func.date(Reserva.fim) <= data_fim,
+                    Reserva.excluido_em.is_(None),
+                )
+            )
+            .all()
+        )

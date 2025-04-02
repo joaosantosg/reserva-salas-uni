@@ -60,6 +60,7 @@ class SalaFiltros(ParametrosPaginacao):
     capacidade_minima: Optional[int] = None
     uso_restrito: Optional[bool] = None
     curso_restrito: Optional[str] = None
+    capacidade_maxima: Optional[int] = None
 
 
 class SalasPaginadas(BaseModel):

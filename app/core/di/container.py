@@ -17,6 +17,8 @@ from app.services.sala_service import SalaService
 from app.services.auth_service import AuthService
 from app.services.email_service import EmailService
 from app.services.auditoria_service import AuditoriaService
+from app.services.scheduler_service import SchedulerService
+from app.services.relatorio_service import RelatorioService
 from app.core.security.jwt import JWTManager
 from app.clients.email_client import EmailClient
 
@@ -32,6 +34,7 @@ class Container(containers.DeclarativeContainer):
             "app.api.v1.bloco_api",
             "app.api.v1.sala_api",
             "app.api.v1.semestre_api",
+            "app.api.v1.relatorio_api",
         ],
         packages=["app.api.v1"],
     )
@@ -56,6 +59,20 @@ class Container(containers.DeclarativeContainer):
     email_service = providers.Factory(EmailService, email_client=email_client)
     auditoria_service = providers.Factory(
         AuditoriaService, auditoria_repository=auditoria_repository
+    )
+
+    relatorio_service = providers.Factory(
+        RelatorioService,
+        reserva_repository=reserva_repository,
+        sala_repository=sala_repository,
+        usuario_repository=usuario_repository,
+    )
+
+    scheduler_service = providers.Singleton(
+        SchedulerService,
+        reserva_repository=reserva_repository,
+        usuario_repository=usuario_repository,
+        email_service=email_service,
     )
 
     usuario_service = providers.Factory(
@@ -94,7 +111,7 @@ class Container(containers.DeclarativeContainer):
 
     auth_service = providers.Factory(AuthService, user_repository=usuario_repository)
 
-
+    # Routers
 
     # Security
     jwt_manager = providers.Singleton(JWTManager)

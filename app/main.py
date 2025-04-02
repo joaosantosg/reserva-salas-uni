@@ -10,11 +10,14 @@ from app.api.v1.reserva_api import router as reserva_router
 from app.api.v1.bloco_api import router as bloco_router
 from app.api.v1.sala_api import router as sala_router
 from app.api.v1.semestre_api import router as semestre_router
+from app.api.v1.relatorio_api import router as relatorio_router
 from app.core.config.settings import settings
 from app.core.config.logging import setup_logging
 from app.core.database.database import init_db
 from app.core.commons.exceptions import BaseAPIException, api_exception_handler
+import logging
 
+logger = logging.getLogger(__name__)
 
 def create_app() -> FastAPI:
     # Create container
@@ -30,6 +33,10 @@ def create_app() -> FastAPI:
             {
                 "name": "auth",
                 "description": "Operações de autenticação",
+            },
+            {
+                "name": "relatorios",
+                "description": "Relatórios e estatísticas",
             },
         ],
         swagger_ui_parameters={
@@ -53,7 +60,7 @@ def create_app() -> FastAPI:
     setup_logging()
 
     # Initialize database
-    # init_db()
+    init_db()
 
     # Register exception handlers
     app.add_exception_handler(BaseAPIException, api_exception_handler)
@@ -100,7 +107,23 @@ def create_app() -> FastAPI:
     app.include_router(bloco_router, prefix=settings.API_V1_STR)
     app.include_router(sala_router, prefix=settings.API_V1_STR)
     app.include_router(semestre_router, prefix=settings.API_V1_STR)
-    return app
+    app.include_router(relatorio_router, prefix=settings.API_V1_STR)
 
+    # Start scheduler
+    @app.on_event("startup")
+    async def startup_event():
+        scheduler_service = container.scheduler_service()
+        scheduler_service.start()
+        scheduler_service.schedule_daily_notifications()
+        logger.info("Scheduler started and daily notifications scheduled")
+
+    # Stop scheduler
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        scheduler_service = container.scheduler_service()
+        scheduler_service.stop()
+        logger.info("Scheduler stopped")
+
+    return app
 
 app = create_app()

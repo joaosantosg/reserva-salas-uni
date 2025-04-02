@@ -1,11 +1,8 @@
-from datetime import datetime, date, timedelta
-from typing import List, Dict, Any
+from datetime import date, timedelta
+from typing import List
 from app.repository.reserva_repository import ReservaRepository
 from app.repository.sala_repository import SalaRepository
 from app.repository.usuario_repository import UsuarioRepository
-from app.model.reserva_model import Reserva
-from app.model.sala_model import Sala
-from app.model.usuario_model import Usuario
 from app.schema.relatorio_schema import (
     ReservasPorSalaResponse,
     ReservasPorUsuarioResponse,

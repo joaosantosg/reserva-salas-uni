@@ -1,8 +1,8 @@
-from typing import Generator, Optional
+from typing import Generator
 import logging
 from contextlib import contextmanager
-from sqlalchemy import create_engine, inspect, event
-from sqlalchemy.orm import sessionmaker, Session, scoped_session
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from app.core.config.settings import settings
 from app.model.base_model import Base

@@ -2,7 +2,7 @@ from datetime import datetime, date, time
 from typing import List, Optional
 from uuid import UUID
 from enum import Enum
-from pydantic import BaseModel, validator, Field, field_validator, ConfigDict, ValidationInfo
+from pydantic import BaseModel, Field, field_validator, ConfigDict, ValidationInfo
 
 from app.core.commons.responses import ParametrosPaginacao, InformacoesPaginacao
 from app.schema.sala_schema import SalaResponse

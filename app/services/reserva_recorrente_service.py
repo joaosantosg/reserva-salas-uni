@@ -18,7 +18,6 @@ from app.schema.reserva_schema import (
     ReservasRecorrentesPaginadas,
     ReservaRecorrenteRegularCreate,
     ReservaRecorrenteSemestreCreate,
-    TipoReservaRecorrente,
 )
 from app.util.datetime_utils import DateTimeUtils
 from app.schema.reserva_schema import FrequenciaRecorrencia

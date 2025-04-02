@@ -31,7 +31,7 @@ class SalaRepository(BaseRepository):
             query = query.filter(Sala.curso_restrito == filtros.curso_restrito)
 
         query = query.options(joinedload(Sala.bloco))
-        query = query.order_by(Sala.nome.asc())
+        query = query.order_by(Sala.identificacao_sala.asc())
         offset = (filtros.pagina - 1) * filtros.tamanho
         total = query.count()
         items = query.offset(offset).limit(filtros.tamanho).all()

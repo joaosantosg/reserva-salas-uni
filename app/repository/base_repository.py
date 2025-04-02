@@ -1,5 +1,5 @@
-from typing import Any, Type, TypeVar, Optional
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError, OperationalError
+from typing import Any, Type, TypeVar
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 import logging
 

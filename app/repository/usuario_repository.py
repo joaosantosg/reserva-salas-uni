@@ -1,7 +1,5 @@
-from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from sqlalchemy.orm import joinedload
 from uuid import UUID
 
 from app.model.usuario_model import Usuario
@@ -56,7 +54,7 @@ class UsuarioRepository(BaseRepository):
         """Busca um usuário pelo email"""
         return (
             self.session.query(Usuario)
-            .filter(and_(Usuario.email == email, Usuario.ativo == True))
+            .filter(and_(Usuario.email == email, Usuario.ativo ))
             .first()
         )
 
@@ -64,7 +62,7 @@ class UsuarioRepository(BaseRepository):
         """Busca um usuário pela matrícula"""
         return (
             self.session.query(Usuario)
-            .filter(and_(Usuario.matricula == matricula, Usuario.ativo == True))
+            .filter(and_(Usuario.matricula == matricula, Usuario.ativo ))
             .first()
         )
 
@@ -77,7 +75,7 @@ class UsuarioRepository(BaseRepository):
         """
         return (
             self.session.query(Usuario)
-            .filter(Usuario.ativo == True)
+            .filter(Usuario.ativo )
             .count()
         )
 
@@ -93,6 +91,6 @@ class UsuarioRepository(BaseRepository):
         """
         return (
             self.session.query(Usuario)
-            .filter(and_(Usuario.id == usuario_id, Usuario.ativo == True))
+            .filter(and_(Usuario.id == usuario_id, Usuario.ativo ))
             .first()
         )

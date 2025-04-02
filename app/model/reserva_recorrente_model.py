@@ -8,7 +8,6 @@ from sqlalchemy import (
     Text,
     ARRAY,
     DateTime,
-    Boolean,
     String,
     CheckConstraint,
 )
@@ -18,8 +17,8 @@ import enum
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from app.util.datetime_utils import DateTimeUtils
-from datetime import datetime, date, time
-from typing import List, Optional
+from datetime import datetime, date
+from typing import List
 
 
 class FrequenciaEnum(str, enum.Enum):

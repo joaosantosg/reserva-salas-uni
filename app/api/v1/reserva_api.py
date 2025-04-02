@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from dependency_injector.wiring import inject, Provide
 from uuid import UUID
-from typing import Union
 
 from app.core.di.container import Container
 from app.core.commons.responses import RespostaDados, RespostaPaginada

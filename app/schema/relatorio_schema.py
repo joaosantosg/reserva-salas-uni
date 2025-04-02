@@ -1,5 +1,5 @@
-from datetime import date, time
-from typing import List, Optional
+from datetime import date
+from typing import List
 from pydantic import BaseModel, Field
 from app.schema.sala_schema import SalaResponse
 from app.schema.usuario_schema import UsuarioResponse

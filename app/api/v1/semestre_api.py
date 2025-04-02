@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
 from dependency_injector.wiring import inject, Provide
 from uuid import UUID
-from typing import List
 from app.core.di.container import Container
-from app.core.commons.responses import RespostaDados, RespostaPaginada, RespostaLista
+from app.core.commons.responses import RespostaDados, RespostaLista
 
 from app.schema.semestre_schema import (
     SemestreResponse,

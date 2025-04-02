@@ -992,6 +992,14 @@ paths:
               - type: string
               - type: "null"
             title: Curso Restrito
+        - name: capacidade_maxima
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            title: Capacidade Maxima
       responses:
         "200":
           description: Successful Response
@@ -1273,6 +1281,233 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/relatorio/dashboard/stats:
+    get:
+      tags:
+        - Relatórios
+      summary: Get Dashboard Stats
+      description: Retorna estatísticas gerais para o dashboard
+      operationId: get_dashboard_stats_api_v1_relatorio_dashboard_stats_get
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStatsResponse"
+  /api/v1/relatorio/reservas/por-sala:
+    get:
+      tags:
+        - Relatórios
+      summary: Get Reservas Por Sala
+      description: Retorna quantidade de reservas por sala em um período
+      operationId: get_reservas_por_sala_api_v1_relatorio_reservas_por_sala_get
+      parameters:
+        - name: data_inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data inicial do período
+            title: Data Inicio
+          description: Data inicial do período
+        - name: data_fim
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data final do período
+            title: Data Fim
+          description: Data final do período
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservasPorSalaResponse"
+                title: Response Get Reservas Por Sala Api V1 Relatorio Reservas Por Sala Get
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/relatorio/reservas/por-usuario:
+    get:
+      tags:
+        - Relatórios
+      summary: Get Reservas Por Usuario
+      description: Retorna quantidade de reservas por usuário em um período
+      operationId: get_reservas_por_usuario_api_v1_relatorio_reservas_por_usuario_get
+      parameters:
+        - name: data_inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data inicial do período
+            title: Data Inicio
+          description: Data inicial do período
+        - name: data_fim
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data final do período
+            title: Data Fim
+          description: Data final do período
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservasPorUsuarioResponse"
+                title: Response Get Reservas Por Usuario Api V1 Relatorio Reservas Por Usuario
+                  Get
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/relatorio/reservas/por-periodo:
+    get:
+      tags:
+        - Relatórios
+      summary: Get Reservas Por Periodo
+      description: Retorna quantidade de reservas por período para uma sala específica
+      operationId: get_reservas_por_periodo_api_v1_relatorio_reservas_por_periodo_get
+      parameters:
+        - name: sala_id
+          in: query
+          required: true
+          schema:
+            type: string
+            description: ID da sala
+            title: Sala Id
+          description: ID da sala
+        - name: data_inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data inicial do período
+            title: Data Inicio
+          description: Data inicial do período
+        - name: data_fim
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data final do período
+            title: Data Fim
+          description: Data final do período
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservasPorPeriodoResponse"
+                title: Response Get Reservas Por Periodo Api V1 Relatorio Reservas Por Periodo
+                  Get
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/relatorio/ocupacao/por-sala:
+    get:
+      tags:
+        - Relatórios
+      summary: Get Ocupacao Por Sala
+      description: Retorna taxa de ocupação por sala em uma data específica
+      operationId: get_ocupacao_por_sala_api_v1_relatorio_ocupacao_por_sala_get
+      parameters:
+        - name: data
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            description: Data para análise de ocupação
+            title: Data
+          description: Data para análise de ocupação
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OcupacaoPorSalaResponse"
+                title: Response Get Ocupacao Por Sala Api V1 Relatorio Ocupacao Por Sala Get
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/relatorio/uso-salas:
+    get:
+      tags:
+        - Relatórios
+      summary: Gerar Relatorio Uso Salas
+      description: |-
+        Gera relatório com estatísticas de uso das salas.
+        Inclui:
+        - Total de reservas por sala
+        - Horários de pico
+        - Taxa de ocupação
+        Requer privilégios de superusuário.
+      operationId: gerar_relatorio_uso_salas_api_v1_relatorio_uso_salas_get
+      parameters:
+        - name: data_inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            description: Data inicial do relatório
+            title: Data Inicio
+          description: Data inicial do relatório
+        - name: data_fim
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            description: Data final do relatório
+            title: Data Fim
+          description: Data final do relatório
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     BlocoCreate:
@@ -1333,6 +1568,56 @@ components:
       type: object
       title: BlocoUpdate
       description: Schema para atualização de bloco
+    DashboardStatsResponse:
+      properties:
+        total_reservas:
+          type: integer
+          title: Total Reservas
+          description: Total de reservas
+        total_salas:
+          type: integer
+          title: Total Salas
+          description: Total de salas
+        total_usuarios:
+          type: integer
+          title: Total Usuarios
+          description: Total de usuários
+        reservas_hoje:
+          type: integer
+          title: Reservas Hoje
+          description: Reservas para hoje
+        reservas_semana:
+          type: integer
+          title: Reservas Semana
+          description: Reservas para esta semana
+        reservas_mes:
+          type: integer
+          title: Reservas Mes
+          description: Reservas para este mês
+        salas_mais_ocupadas:
+          items:
+            $ref: "#/components/schemas/ReservasPorSalaResponse"
+          type: array
+          title: Salas Mais Ocupadas
+          description: Top 5 salas mais ocupadas
+        usuarios_mais_ativos:
+          items:
+            $ref: "#/components/schemas/ReservasPorUsuarioResponse"
+          type: array
+          title: Usuarios Mais Ativos
+          description: Top 5 usuários mais ativos
+      type: object
+      required:
+        - total_reservas
+        - total_salas
+        - total_usuarios
+        - reservas_hoje
+        - reservas_semana
+        - reservas_mes
+        - salas_mais_ocupadas
+        - usuarios_mais_ativos
+      title: DashboardStatsResponse
+      description: Schema para estatísticas gerais do dashboard
     FrequenciaRecorrencia:
       type: string
       enum:
@@ -1424,6 +1709,36 @@ components:
         - usuario
       title: LoginResposta
       description: Resposta do login com tokens
+    OcupacaoPorSalaResponse:
+      properties:
+        sala:
+          $ref: "#/components/schemas/SalaResponse"
+        taxa_ocupacao:
+          type: number
+          title: Taxa Ocupacao
+          description: Taxa de ocupação em porcentagem
+        data:
+          type: string
+          format: date
+          title: Data
+          description: Data da análise
+        total_horas:
+          type: number
+          title: Total Horas
+          description: Total de horas reservadas
+        total_horas_disponiveis:
+          type: number
+          title: Total Horas Disponiveis
+          description: Total de horas disponíveis
+      type: object
+      required:
+        - sala
+        - taxa_ocupacao
+        - data
+        - total_horas
+        - total_horas_disponiveis
+      title: OcupacaoPorSalaResponse
+      description: Schema para relatório de ocupação por sala
     ReservaCreate:
       properties:
         sala_id:
@@ -1841,6 +2156,80 @@ components:
       type: object
       title: ReservaUpdate
       description: Schema para atualização de reserva
+    ReservasPorPeriodoResponse:
+      properties:
+        data:
+          type: string
+          format: date
+          title: Data
+          description: Data do período
+        quantidade:
+          type: integer
+          title: Quantidade
+          description: Quantidade de reservas
+        sala_id:
+          type: string
+          title: Sala Id
+          description: ID da sala
+      type: object
+      required:
+        - data
+        - quantidade
+        - sala_id
+      title: ReservasPorPeriodoResponse
+      description: Schema para relatório de reservas por período
+    ReservasPorSalaResponse:
+      properties:
+        sala:
+          $ref: "#/components/schemas/SalaResponse"
+        quantidade:
+          type: integer
+          title: Quantidade
+          description: Quantidade de reservas
+        periodo_inicio:
+          type: string
+          format: date
+          title: Periodo Inicio
+          description: Data inicial do período
+        periodo_fim:
+          type: string
+          format: date
+          title: Periodo Fim
+          description: Data final do período
+      type: object
+      required:
+        - sala
+        - quantidade
+        - periodo_inicio
+        - periodo_fim
+      title: ReservasPorSalaResponse
+      description: Schema para relatório de reservas por sala
+    ReservasPorUsuarioResponse:
+      properties:
+        usuario:
+          $ref: "#/components/schemas/UsuarioResponse"
+        quantidade:
+          type: integer
+          title: Quantidade
+          description: Quantidade de reservas
+        periodo_inicio:
+          type: string
+          format: date
+          title: Periodo Inicio
+          description: Data inicial do período
+        periodo_fim:
+          type: string
+          format: date
+          title: Periodo Fim
+          description: Data final do período
+      type: object
+      required:
+        - usuario
+        - quantidade
+        - periodo_inicio
+        - periodo_fim
+      title: ReservasPorUsuarioResponse
+      description: Schema para relatório de reservas por usuário
     RespostaDados_BlocoResponse_:
       properties:
         status:

@@ -66,7 +66,9 @@ class SalaRepository(BaseRepository):
         """Busca todas as salas de um bloco"""
         return (
             self.session.query(Sala)
-            .filter(and_(Sala.bloco_id == bloco_id, Sala.excluido_em.is_(None)))
+            .options(joinedload(Sala.bloco))
+            .filter(Sala.excluido_em.is_(None))
+            .filter(Sala.bloco_id == bloco_id)
             .all()
         )
 
@@ -95,6 +97,8 @@ class SalaRepository(BaseRepository):
         """
         return (
             self.session.query(Sala)
-            .filter(and_(Sala.id == sala_id, Sala.excluido_em.is_(None)))
+            .options(joinedload(Sala.bloco))
+            .filter(Sala.excluido_em.is_(None))
+            .filter(Sala.id == sala_id)
             .first()
         )

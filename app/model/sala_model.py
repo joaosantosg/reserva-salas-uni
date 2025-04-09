@@ -22,36 +22,17 @@ class Sala(BaseModel):
         UniqueConstraint("bloco_id", "identificacao_sala", name="uq_sala_por_bloco"),
     )
 
-    id = Column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, comment="ID da sala"
-    )
-    bloco_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("blocos.id", ondelete="CASCADE"),
-        nullable=False,
-        comment="ID do bloco",
-    )
-    identificacao_sala = Column(
-        String(20), nullable=False, comment="Identificação da sala"
-    )
-    capacidade_maxima = Column(
-        Integer, nullable=False, comment="Capacidade máxima da sala"
-    )
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, comment="ID da sala")
+    bloco_id = Column(UUID(as_uuid=True), ForeignKey("blocos.id", ondelete="CASCADE"), nullable=False, comment="ID do bloco")
+    identificacao_sala = Column(String(20), nullable=False, comment="Identificação da sala")
+    capacidade_maxima = Column(Integer, nullable=False, comment="Capacidade máxima da sala")
     recursos = Column(ARRAY(Text), default=[], comment="Recursos disponíveis na sala")
-    uso_restrito = Column(
-        Boolean, default=False, comment="Indica se a sala é restrita para uso"
-    )
-    curso_restrito = Column(
-        String(100), nullable=True, comment="Curso restrito para uso da sala"
-    )
-    criado_em = Column(
-        DateTime(timezone=True), nullable=False, default=DateTimeUtils.now
-    )
-    atualizado_em = Column(
-        DateTime(timezone=True),
-        nullable=False,
-        default=DateTimeUtils.now,
-        onupdate=DateTimeUtils.now,
-    )
+    uso_restrito = Column(Boolean, default=False, comment="Indica se a sala é restrita para uso")
+    curso_restrito = Column(String(255), nullable=True, comment="Curso restrito para uso da sala")
+    criado_em = Column(DateTime(timezone=True), nullable=False, default=DateTimeUtils.now)
+    atualizado_em = Column(DateTime(timezone=True), nullable=False, default=DateTimeUtils.now, onupdate=DateTimeUtils.now)
+    excluido_em = Column(DateTime(timezone=True), nullable=True, comment="Data e hora da exclusão da sala")
+
+    excluido_por = Column(UUID(as_uuid=True),ForeignKey("usuarios.id", ondelete="CASCADE"),nullable=True,comment="ID do usuário que excluiu a sala",)
 
     bloco = relationship("Bloco", backref="salas")

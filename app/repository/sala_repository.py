@@ -67,7 +67,7 @@ class SalaRepository(BaseRepository):
         return (
             self.session.query(Sala)
             .options(joinedload(Sala.bloco))
-            .filter(Sala.excluido_em.is_(None))
+            #   .filter(Sala.excluido_em.is_(None))
             .filter(Sala.bloco_id == bloco_id)
             .all()
         )
@@ -81,7 +81,7 @@ class SalaRepository(BaseRepository):
         """
         return (
             self.session.query(Sala)
-            .filter(Sala.excluido_em.is_(None))
+            # .filter(Sala.excluido_em.is_(None))
             .count()
         )
 
@@ -98,7 +98,7 @@ class SalaRepository(BaseRepository):
         return (
             self.session.query(Sala)
             .options(joinedload(Sala.bloco))
-            .filter(Sala.excluido_em.is_(None))
+            # .filter(Sala.excluido_em.is_(None))
             .filter(Sala.id == sala_id)
             .first()
         )

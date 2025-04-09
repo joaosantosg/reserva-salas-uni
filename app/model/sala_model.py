@@ -31,8 +31,8 @@ class Sala(BaseModel):
     curso_restrito = Column(String(255), nullable=True, comment="Curso restrito para uso da sala")
     criado_em = Column(DateTime(timezone=True), nullable=False, default=DateTimeUtils.now)
     atualizado_em = Column(DateTime(timezone=True), nullable=False, default=DateTimeUtils.now, onupdate=DateTimeUtils.now)
-    excluido_em = Column(DateTime(timezone=True), nullable=True, comment="Data e hora da exclusão da sala")
+    # excluido_em = Column(DateTime(timezone=True), nullable=True, comment="Data e hora da exclusão da sala")
+    # excluido_por = Column(UUID(as_uuid=True),ForeignKey("usuarios.id", ondelete="CASCADE"),nullable=True,comment="ID do usuário que excluiu a sala",)
 
-    excluido_por = Column(UUID(as_uuid=True),ForeignKey("usuarios.id", ondelete="CASCADE"),nullable=True,comment="ID do usuário que excluiu a sala",)
 
     bloco = relationship("Bloco", backref="salas")

@@ -2,6 +2,10 @@
 
 Sistema de reserva de salas para universidades, desenvolvido com FastAPI e arquitetura limpa.
 
+*CODIGO NAO SERÁ MAIS ATUALIZADO NO REPO PÚBLICO*
+
+Movido para [Reserva Salas API](https://joaosantosg@dev.azure.com/joaosantosg/reserva-salas-api/_git/reserva-salas-api)
+
 ## 🚀 Sobre o Projeto
 
 O **Reserva de Salas UNI** é uma aplicação web para gerenciamento de reservas de salas em ambientes universitários.
